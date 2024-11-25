@@ -99,7 +99,7 @@ A sample configuration file, [**eternal.json**](configs/eternal.json), is provi
                 }
             ],
             "llm_cfg": {
-                "name": "OpenAIChatCompletion",
+                "name": "EternalAIChatCompletion",
                 "init_params": {
                     "model_name": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
                     "max_tokens": 1024,
