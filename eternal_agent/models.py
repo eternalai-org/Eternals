@@ -3,6 +3,7 @@ from typing import List, Dict, Optional, Callable, Any
 from enum import Enum
 import json 
 import uuid
+import time
 
 def random_uuid() -> str:
     return str(uuid.uuid4().hex)
@@ -38,20 +39,20 @@ class Tool(BaseModel):
 
 class ClassRegistration(BaseModel):
     name: str
-    init_params: Dict[str, Any]
+    init_params: Optional[Dict[str, Any]] = {}
 
 class InferenceState(str, Enum):
     EXECUTING = "executing"
     DONE = "done"
     ERROR = "error"
 
-class ReactChainState(str, Enum):
+class ChainState(str, Enum):
     NEW = "new"
     RUNNING = "running"
     DONE = "done"
     ERROR = "error"
 
-class ReactAgentReasoningLog(BaseModel):
+class AgentLog(BaseModel):
     # auto
     id: str = Field(default_factory=lambda: f"fun-{random_uuid()}")
 
@@ -63,18 +64,19 @@ class ReactAgentReasoningLog(BaseModel):
 
     toolset_cfg: List[ClassRegistration]
     llm_cfg: ClassRegistration
+    agent_builder: ClassRegistration
 
     # for response
     infer_receipt: Optional[str] = None
-    state: ReactChainState = ReactChainState.NEW
+    state: ChainState = ChainState.NEW
     scratchpad: List[Dict[str, str]] = []
     system_message: str = "" # for error messages
 
     def is_done(self):
-        return self.state == ReactChainState.DONE
+        return self.state == ChainState.DONE
 
     def is_error(self):
-        return self.state == ReactChainState.ERROR
+        return self.state == ChainState.ERROR
 
     def clone(self) -> dict:
         return dict(
@@ -90,6 +92,23 @@ class ReactAgentReasoningLog(BaseModel):
             toolset_cfg=[e.model_dump() for e in self.toolset_cfg],
             llm_cfg=self.llm_cfg.model_dump()
         )
+
+class ChatSession(BaseModel):
+    id: str = Field(default_factory=lambda: f"chat-{random_uuid()}")
+    messages: List[Dict[str, str]] = []
+    llm_cfg: ClassRegistration = ClassRegistration(**
+        {
+            "name": "EternalAIChatCompletion",
+            "init_params": {
+                "model_name": "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+                "max_tokens": 1024,
+                "model_kwargs": {},
+                "temperature": 0.3,
+                "max_retries": 2
+            }
+        }
+    )
+    last_execution: Optional[float] = time.time()
 
 # TODO: there should be a cachable interface
 class InferenceResult(Serializable):

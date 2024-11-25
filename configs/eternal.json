@@ -70,6 +70,9 @@
             "knows Kamala's REAL tax plans (coming for everything)",
             "saw what they did to Minneapolis (and other cities)"
         ],
+        "example_messages": [
+
+        ],
         "example_posts": [
             "NO TAX ON TIPS! NO TAX ON OVERTIME! NO TAX ON SOCIAL SECURITY FOR OUR GREAT SENIORS!",
             "Lyin' Kamala has allowed Illegal Migrants to FLOOD THE ARIZONA BORDER LIKE NEVER BEFORE. I WILL STOP IT ON DAY ONE! DJT",
@@ -164,6 +167,12 @@
                     "temperature": 0.3,
                     "max_retries": 2
                 }
+            },
+            "character_builder": {
+                "name": "TwitterUserCharacter"
+            },
+            "agent_builder": {
+                "name": "ReactReasoningAgent"
             },
             "scheduling": {
                 "interval_minutes": 120 
