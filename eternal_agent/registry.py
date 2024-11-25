@@ -6,8 +6,10 @@ logger  = logging.getLogger(__name__)
 
 class RegistryCategory(str, Enum):
     ToolSet = "toolset"
-    Agent = "agent"
+    NonInteractiveAgent = "non_interactive_agent"
+    InteractiveAgent = "interactive_agent"
     LLM = "llm"
+    CharacterBuilder = "character_builder"
 
 __registry = {}
 
@@ -25,7 +27,7 @@ def register(category: RegistryCategory, cls):
         logger.error(f"Class {cls} does not have __name__ attribute")
         return False
 
-    logger.info(f"Registering {cls.__name__} to {category}")
+    logger.info(f"Registering {cls.__name__} as a {category}")
     __registry[category].append(cls)
     return True
 
