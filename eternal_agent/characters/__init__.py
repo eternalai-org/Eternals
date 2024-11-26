@@ -1,4 +1,4 @@
-from .character_base import CharacterBase
+from .character_base import CharacterBuilderBase
 
 modules = []
 import os
@@ -9,7 +9,7 @@ for file in os.listdir(current_dir):
         modules.append(os.path.basename(file)[:-3])
 
 __all__ = [
-    "CharacterBase",
+    "CharacterBuilderBase",
     *modules
 ]
 
