@@ -401,7 +401,7 @@ def get_tweets_by_username(username: str, top_k=C.DEFAULT_TOP_K) -> List[TweetOb
     
     resp: dict = resp.json()    
 
-    if resp.get("error") is not None:
+    if resp.get("error") is not None or resp["result"]["data"] is None:
         err: dict = resp["error"]
         logger.error("Error occured when calling api: " + err.get("message"))
         return []
