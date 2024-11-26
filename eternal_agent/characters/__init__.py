@@ -16,4 +16,4 @@ __all__ = [
 from . import *
 
 from . import simple_character
-DEFAULT_CHAT_COMPLETION_CHARACTER_BUILDER = simple_character.SimpleCharacter
+DEFAULT_CHAT_COMPLETION_CHARACTER_BUILDER = simple_character.SimpleCharacterBuilder

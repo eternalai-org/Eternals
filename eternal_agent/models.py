@@ -70,6 +70,8 @@ class AgentLog(BaseModel):
     infer_receipt: Optional[str] = None
     state: ChainState = ChainState.NEW
     scratchpad: List[Dict[str, str]] = []
+
+
     system_message: str = "" # for error messages
 
     def is_done(self):
@@ -108,6 +110,11 @@ class ChatSession(BaseModel):
             }
         }
     )
+
+    toolsets_cfg: List[ClassRegistration] = []
+    agent_builder_cfg: Optional[ClassRegistration] = None
+    character_builder_cfg: Optional[ClassRegistration] = None
+
     last_execution: Optional[float] = time.time()
 
 # TODO: there should be a cachable interface

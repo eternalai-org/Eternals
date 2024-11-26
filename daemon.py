@@ -3,6 +3,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from dotenv import load_dotenv
+if not load_dotenv():
+    logger.warning("No .env file found")
+
 import eternal_agent
 import sys
 import schedule

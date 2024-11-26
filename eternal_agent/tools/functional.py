@@ -2,10 +2,8 @@ import requests
 from eternal_agent.models import TweetObject, TwitterUserObject
 import logging
 from typing import List, Union, Optional
-from eternal_agent.utils import formated_utc_time, get_script_dir
+from eternal_agent.utils import formated_utc_time
 from eternal_agent import constant as C
-import json
-import os
 import re
 from bs4 import BeautifulSoup
 
@@ -568,8 +566,36 @@ def tweet(content: str):
     return _perform_twitter_action_and_get_result(url, headers, payload)
 
 
-with open(os.path.join(get_script_dir(__file__), "assets", "tokens.json"), "r") as f:
-    TOKENS_INFO: list = json.load(f)
+TOKENS_INFO: list = [
+    {
+        "symbol": "Goat",
+        "mint_address": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump"
+    },
+    {
+        "symbol": "Fartcoin",
+        "mint_address": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"
+    },
+    {
+        "symbol": "Cents",
+        "mint_address": "C9FVTtx4WxgHmz55FEvQgykq8rqiLS8xRBVgqQVtpump"
+    },
+    {
+        "symbol": "Zerebro",
+        "mint_address": "8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn"
+    },
+    {
+        "symbol": "Bully",
+        "mint_address": "79yTpy8uwmAkrdgZdq6ZSBTvxKsgPrNqTLvYQBh1pump"
+    },
+    {
+        "symbol": "Shegen",
+        "mint_address": "2KgAN8nLAU74wjiyKi85m4ZT6Z9MtqrUTGfse8Xapump"
+    },
+    {
+        "symbol": "Yousim",
+        "mint_address": "66gsTs88mXJ5L4AtJnWqFW6H2L5YQDRy4W41y6zbpump"
+    }
+]
     
 SYMBOL2MINTADDR = {v["symbol"]: v["mint_address"] for v in TOKENS_INFO}
 MINTADDR2SYMBOL = {v["mint_address"]: v["symbol"] for v in TOKENS_INFO}

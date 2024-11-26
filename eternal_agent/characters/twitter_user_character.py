@@ -4,7 +4,7 @@ from eternal_agent.registry import register_decorator, RegistryCategory
 from eternal_agent import constant as C
 
 @register_decorator(RegistryCategory.CharacterBuilder)
-class TwitterUserCharacter(CharacterBase):
+class TwitterUserCharacterBuilder(CharacterBase):
     def __call__(self, characteristic_dict: dict) -> Any:
         if "system_prompt" in characteristic_dict:
             return characteristic_dict["system_prompt"]
