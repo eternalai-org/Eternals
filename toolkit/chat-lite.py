@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
+
 if not load_dotenv():
     logger.warning("Failed to load .env file")
 
@@ -22,10 +23,10 @@ def get_opt():
 
 def main():
     opt = get_opt()
-    
+
     if opt.debug:
-        logger.setLevel(logging.DEBUG)
-    
+        logging.basicConfig(level=logging.DEBUG)
+
     assert os.path.exists(opt.eternal), "Eternal file not found"
     
     with open(opt.eternal, "rb") as f:
@@ -75,18 +76,17 @@ def main():
     )
 
     chat_thread = []
-    
-    MAX_CONVERSATION_LENGTH = 30
-    MAX_CONVERSATION_LENGTH += (1 - (MAX_CONVERSATION_LENGTH % 2))
-        
     print("Let's chat with your eternal! (Ctrl-C to break)") 
     
     try:
-        while True:
-            # flush the stdin
-            sys.stdin.flush()            
-            input_message = input("> You: ")
+        while True:        
             
+            input_message = ""
+            
+            print("> You: ", end="", flush=True)
+            while not input_message.strip(" \t\n\r"):
+                input_message = sys.stdin.readline().strip(" \t\n\r")
+
             try:
                 resp: models.AssistantResponse = agent.step(
                     models.Mission(system_reminder="", task=input_message)
@@ -108,6 +108,9 @@ def main():
                     "content": resp.content
                 }
             ])
+            
+            # flush all from stdin
+            sys.stdin.flush()
 
     except KeyboardInterrupt:
         signal.signal(signal.SIGINT, lambda x, y: None)
