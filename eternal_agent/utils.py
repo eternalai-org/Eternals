@@ -1,6 +1,5 @@
 import datetime 
 import os
-import json
 from typing import Optional
 import logging
 from .models import InferenceResult
@@ -14,46 +13,6 @@ def formated_utc_time():
 
 def get_script_dir(ee = __file__):
     return os.path.dirname(os.path.realpath(ee))
-
-def parse_conversational_react_response(response: str, verbose=True) -> dict:
-    try:
-        json_response = json.loads(response)
-    except json.JSONDecodeError:
-        return {}
-
-    segment_pad = {}
-
-    if "thought" in json_response:
-        not verbose or logger.info("🤔 Thought: " + json_response["thought"])
-        segment_pad.update({
-            "thought": json_response["thought"]
-        })
-
-    if "final_answer" in json_response:
-        segment_pad.update({
-            "final_answer": json_response["final_answer"]
-        })
-        not verbose or logger.info("🎯 Final Answer: " + json_response["final_answer"])
-
-        return segment_pad
-
-    if "action" in json_response:
-        segment_pad.update({
-            "action": json_response["action"]
-        })
-        not verbose or logger.info("🛠️ Action: " + json_response["action"])
-
-        if "action_input" not in json_response:
-            json_response["action_input"] = ""
-
-    if "action_input" in json_response:
-        not verbose or logger.info("📥 Action Input: " + json_response["action_input"])
-
-        segment_pad.update({
-            "action_input": json_response["action_input"]
-        })
-
-    return segment_pad
 
 @singleton
 class SimpleCacheMechanism(object):
@@ -75,3 +34,10 @@ class SimpleCacheMechanism(object):
 
     def get(self, id: str, default=None) -> Optional[InferenceResult]:
         return self._log.get(id, default)
+
+
+def build_agent():
+    pass
+
+def build_character():
+    pass   

@@ -3,7 +3,6 @@ from eternal_agent.models import Tool, ToolParam, ToolParamDtype
 from eternal_agent.registry import RegistryCategory, register_decorator
 from . base_toolset import Toolset
 from . import functional
-from eternal_agent import constant as C
 
 @register_decorator(RegistryCategory.ToolSet)
 class TwitterToolset(Toolset):

@@ -3,6 +3,7 @@ from typing import List, Dict, Optional, Callable, Any
 from enum import Enum
 import json 
 import uuid
+import time
 
 def random_uuid() -> str:
     return str(uuid.uuid4().hex)
@@ -38,58 +39,105 @@ class Tool(BaseModel):
 
 class ClassRegistration(BaseModel):
     name: str
-    init_params: Dict[str, Any]
+    init_params: Optional[Dict[str, Any]] = {}
 
 class InferenceState(str, Enum):
     EXECUTING = "executing"
     DONE = "done"
     ERROR = "error"
 
-class ReactChainState(str, Enum):
+class ChainState(str, Enum):
     NEW = "new"
     RUNNING = "running"
     DONE = "done"
     ERROR = "error"
 
-class ReactAgentReasoningLog(BaseModel):
+class Characteristic(BaseModel):
+    bio: Optional[List[str]] = []
+    lore: Optional[List[str]] = []
+    knowledge: Optional[List[str]] = []
+    interested_topics: Optional[List[str]] = []
+    agent_personal_info: Optional[Dict[str, str]] = {}
+    system_prompt: Optional[str] = None
+    example_posts: Optional[List[str]] = []
+    example_messages: Optional[List[str]] = []
+
+class AgentLog(BaseModel):
     # auto
     id: str = Field(default_factory=lambda: f"fun-{random_uuid()}")
-
-    # for request
-    system_prompt: str # personality of the agent
-    task: str # set a goal for the agent
-    system_reminder: str # set a goal for the agent
-    interval_minutes: int = 120
+    
+    characteristic: Characteristic
 
     toolset_cfg: List[ClassRegistration]
     llm_cfg: ClassRegistration
+    agent_builder_cfg: ClassRegistration
+    character_builder_cfg: ClassRegistration
 
     # for response
     infer_receipt: Optional[str] = None
-    state: ReactChainState = ReactChainState.NEW
+    state: ChainState = ChainState.NEW
     scratchpad: List[Dict[str, str]] = []
+
     system_message: str = "" # for error messages
+    verbose: bool = True
 
     def is_done(self):
-        return self.state == ReactChainState.DONE
+        return self.state == ChainState.DONE
 
     def is_error(self):
-        return self.state == ReactChainState.ERROR
+        return self.state == ChainState.ERROR
 
     def clone(self) -> dict:
         return dict(
             id=self.id,
-            task=self.task,
-            system_reminder=self.system_reminder,
-            system_prompt=self.system_prompt,
-            interval_minutes=self.interval_minutes,
             infer_receipt=self.infer_receipt,
             state=self.state,
             scratchpad=self.scratchpad,
             system_message=self.system_message,
             toolset_cfg=[e.model_dump() for e in self.toolset_cfg],
-            llm_cfg=self.llm_cfg.model_dump()
+            llm_cfg=self.llm_cfg.model_dump(),
+            agent_builder_cfg=self.agent_builder_cfg.model_dump(),
+            character_builder_cfg=self.character_builder_cfg.model_dump(),
+            characteristic=self.characteristic.model_dump()
         )
+
+class Mission(BaseModel):
+    system_reminder: str
+    task: str
+
+class AssistantResponse(BaseModel):
+    content: str
+
+class NonInteractiveAgentLog(AgentLog):
+    mission: Mission
+    
+    def clone(self):
+        return dict(
+            **super().clone(),
+            mission=self.mission.model_dump()
+        )
+
+class ChatSession(BaseModel):
+    id: str = Field(default_factory=lambda: f"chat-{random_uuid()}")
+    messages: List[Dict[str, str]] = []
+    llm_cfg: ClassRegistration = ClassRegistration(**
+        {
+            "name": "EternalAIChatCompletion",
+            "init_params": {
+                "model_name": "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+                "max_tokens": 1024,
+                "model_kwargs": {},
+                "temperature": 0.3,
+                "max_retries": 2
+            }
+        }
+    )
+
+    toolsets_cfg: List[ClassRegistration] = []
+    agent_builder_cfg: Optional[ClassRegistration] = None
+    character_builder_cfg: Optional[ClassRegistration] = None
+
+    last_execution: Optional[float] = time.time()
 
 # TODO: there should be a cachable interface
 class InferenceResult(Serializable):
