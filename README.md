@@ -233,15 +233,10 @@ To start the agent, run the following command:
 python daemon.py
 ```
 
-### Chat with your eternal 
-
-To chat with the defined eternal agent, run the following command: 
-
-```bash
-python toolkits/chat-lite.py
-```
-
 ### Integration
+
+<!-- label -->
+
 
 To integrate your eternal agent to your existing `python project`, run the following commands to install the `eternal_agent` package:
 
@@ -250,4 +245,26 @@ python -m pip install .
 
 # or directly from github
 python -m pip install git+https://github.com/eternalai-org/Eternals 
+```
+
+Then, in your python project, just import the `eternal_agent`. Documentations for the app integration will be updated soon!
+
+```python3
+import eternal_agent
+```
+
+### Chat with your eternal 
+
+To chat with the defined eternal, please execute these following steps:
+
+- Install the `eternal_agent` package first: 
+
+```bash
+python -m pip install .
+```
+
+- To chat with the agent, just simply run:
+
+```bash
+python toolkits/chat-lite.py
 ```
