@@ -7,8 +7,9 @@ if not load_dotenv():
     logger.warning("Failed to load .env file")
 
 from argparse import ArgumentParser
-from eternal_agent import tools, registry, models
+from eternal_agent import registry, models, agents
 import os
+import sys
 import json
 import signal
 
@@ -33,55 +34,47 @@ def main():
     assert "interactive" in eternal_cfg, "Interactive settings (key: interactive) not found in the eternal config file"
     interactive_settings = eternal_cfg["interactive"]
 
+    logger.info("Loading character builder settings...")
     character_builder_cfg = models.ClassRegistration(**interactive_settings["character_builder"])
+    
+    logger.info("Loading agent builder settings...")
     agent_builder_cfg = models.ClassRegistration(**interactive_settings["agent_builder"])
+    
+    logger.info("Loading LLM settings...")
     llm_cfg = models.ClassRegistration(**interactive_settings["llm_cfg"])
-    toolsets_cfg = [models.ClassRegistration(**e) for e in interactive_settings["toolset_cfg"]]
     
-    print("Loading toolkit...")
+    logger.info("Loading toolset settings...")
+    toolsets_cfg = [
+        models.ClassRegistration(**e) 
+        for e in interactive_settings["toolset_cfg"]
+    ]
+    
     logger.info(
-        "\nCharacter builder: %s\nAgent builder: %s\nLLM: %s\nToolsets: %s",
+        "\n\nCharacter builder: %s\n\nAgent builder: %s\n\nLLM: %s\n\nToolsets: %s",
         character_builder_cfg, agent_builder_cfg, llm_cfg, toolsets_cfg
-    )
+    )    
     
-    character_builder = registry.get_cls(registry.RegistryCategory.CharacterBuilder, character_builder_cfg.name)(
-        **character_builder_cfg.init_params
-    )
-    
-    # agent_builder = registry.get_cls(registry.RegistryCategory.InteractiveAgent, agent_builder_cfg.name)(
-    #     **agent_builder_cfg.init_params
-    # )
-    
-    logger.info("Building LLM...")
-    _llm = registry.get_cls(registry.RegistryCategory.LLM, llm_cfg.name)(
-        **llm_cfg.init_params
-    )
-    
-    toolsets = []
-    
-    for toolset_cfg in toolsets_cfg:
-        toolset = registry.get_cls(registry.RegistryCategory.ToolSet, toolset_cfg.name)(
-            **toolset_cfg.init_params
-        )
-        
-        toolsets.append(toolset)
 
-    toolset_composer = tools.ToolsetComposer(toolsets)
     assert "characteristic" in eternal_cfg, "Characteristic (key: characteristic) not found in the eternal config file"
 
-    characteristic = eternal_cfg["characteristic"]
+    characteristic = models.Characteristic(**eternal_cfg["characteristic"])
+
+    model = models.AgentLog(
+        characteristic=characteristic,
+        llm_cfg=llm_cfg,
+        agent_builder_cfg=agent_builder_cfg,
+        character_builder_cfg=character_builder_cfg,
+        toolset_cfg=toolsets_cfg
+    )
+    
+    logger.info("Building agent...")
+    
+    agent: agents.InteractiveAgentBase = registry.get_cls(registry.RegistryCategory.InteractiveAgent, agent_builder_cfg.name)(
+        model,
+        **agent_builder_cfg.init_params
+    )
+
     chat_thread = []
-
-    logger.info("Building agent characteristics...")
-    chat_thread.append({
-        'role': 'system',
-        'content': character_builder(characteristic)
-    })
-    
-
-    
-    # logger.info("Building agent...")
-    # agent = agent_builder(characteristic)
     
     MAX_CONVERSATION_LENGTH = 30
     MAX_CONVERSATION_LENGTH += (1 - (MAX_CONVERSATION_LENGTH % 2))
@@ -90,43 +83,45 @@ def main():
     
     try:
         while True:
+            # flush the stdin
+            sys.stdin.flush()            
             input_message = input("> You: ")
+            
+            try:
+                resp: models.AssistantResponse = agent.step(
+                    models.Mission(system_reminder="", task=input_message)
+                )
 
-            if len(chat_thread) > MAX_CONVERSATION_LENGTH:
-                exceeded = (((len(chat_thread) - MAX_CONVERSATION_LENGTH) + 1) // 2) * 2
-                chat_thread = [chat_thread[0], *chat_thread[exceeded:]]
+            except Exception as e:
+                logger.error("An error occurred: %s", e)
+                break 
 
-            chat_thread.append({
-                'role': 'user',
-                'content': input_message
-            })
+            print(f"> Eternal: " + resp.content)
 
-            resp = _llm(chat_thread)
-            resp_message = _llm.get(resp.id)
+            chat_thread.extend([
+                {
+                    "role": "user",
+                    "content": input_message
+                }, 
+                {
+                    "role": "assistant",
+                    "content": resp.content
+                }
+            ])
 
-            if resp_message.result is None:
-                raise Exception("Failed to get a response from the model")
-
-            chat_thread.append({
-                'role': 'assistant',
-                'content': resp_message.result
-            })
-
-            print(f"> Eternal: {resp_message.result}")
     except KeyboardInterrupt:
         signal.signal(signal.SIGINT, lambda x, y: None)
-        
-        if opt.output is not None: 
-            logger.info("Dumping chat history:")
 
-            with open(opt.output, "w") as f:
-                for chat in chat_thread:
-                    f.write(f"{chat['role']}: {chat['content']}\n")
+    if opt.output is not None: 
+        logger.info("Dumping chat history:")
 
-            logger.info("Chat history dumped to %s", opt.output)
+        with open(opt.output, "w") as f:
+            for chat in chat_thread:
+                f.write(f"{chat['role']}: {chat['content']}\n\n")
 
-        print("Exiting chat...")
-        
+        logger.info("Chat history dumped to %s", opt.output)
+
+    print("Exiting chat...")
     
 if __name__ == '__main__':
     main() 

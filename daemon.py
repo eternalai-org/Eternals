@@ -91,11 +91,16 @@ def main():
     with open(args.agent_config_file, "rb") as fp:
         cfg = json.loads(fp.read())
 
-    service.init(cfg)    
+    service.schedule(cfg)    
     service.start()
 
     if args.serve_interactive_agents:
-        http_service_thread = threading.Thread(target=http_service, args=(service,), daemon=True)
+        http_service_thread = threading.Thread(
+            target=http_service, 
+            args=(service,), 
+            daemon=True
+        )
+
         http_service_thread.start()
 
     while True:
