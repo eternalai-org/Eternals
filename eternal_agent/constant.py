@@ -1,11 +1,7 @@
-from dotenv import load_dotenv
 import logging
-logger = logging.getLogger(__name__)
-
-if not load_dotenv():
-    logger.warning("No .env file found")
-
 import os
+
+logger = logging.getLogger(__name__)
 
 def get_env_and_warning(key: str, default=None):
     if key not in os.environ:
@@ -14,8 +10,7 @@ def get_env_and_warning(key: str, default=None):
     
     return os.getenv(key)
 
-# TODO: break this file into smaller files for each package
-
+# TODO: break this file into smaller parts and assign to each package
 ETERNAL_X_API = get_env_and_warning("ETERNAL_X_API", "").rstrip("/")
 ETERNAL_X_API_APIKEY = get_env_and_warning("ETERNAL_X_API_APIKEY")
 IS_SANDBOX = get_env_and_warning("IS_SANDBOX", "0") == "1"
@@ -23,7 +18,7 @@ IS_SANDBOX = get_env_and_warning("IS_SANDBOX", "0") == "1"
 ETERNAL_BACKEND_API = get_env_and_warning("ETERNAL_BACKEND_API", "").rstrip("/")
 ETERNAL_BACKEND_API_APIKEY = get_env_and_warning("ETERNAL_BACKEND_API_APIKEY") 
 
-ETERNAL_API_CHAIN_ID = get_env_and_warning("ETERNAL_API_CHAIN_ID", "8453")
+ETERNAL_API_CHAIN_ID = os.getenv("ETERNAL_API_CHAIN_ID", "8453")
 
 # for trading, not available in the current version
 CHAIN_ID=None
@@ -37,3 +32,5 @@ DEFAULT_LORE_MAX_LENGTH = 20
 DEFAULT_KNOWLEDGE_MAX_LENGTH = 30
 DEFAULT_EXAMPLE_POSTS_MAX_LENGTH = 15
 DEFAULT_INTERESTED_TOPICS_MAX_LENGTH = 10
+
+APP_NAME = "Eternal Agent"

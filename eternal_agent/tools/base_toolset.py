@@ -1,6 +1,7 @@
 from typing import List
 from eternal_agent.models import Tool
 import traceback
+import random
 
 class Toolset(object):
     TOOLSET_NAME = "default"
@@ -8,12 +9,14 @@ class Toolset(object):
     PURPOSE = "to get information or take action"
 
     def __init__(self, 
-                 exclude=[]
-    ):
+                exclude=[],
+                shuffle_results=False
+    ) -> None:
         self.tools = [
             tool for tool in self.TOOLS 
             if tool.name not in exclude
         ]
+        self.shuffle_results = shuffle_results
 
     def render_instruction(self):
         instruct = f'Toolset {self.TOOLSET_NAME}: {self.PURPOSE}:\n'
@@ -57,13 +60,21 @@ class Toolset(object):
             return results
         
         try:
-            return tool.executor(*params)
+            res = tool.executor(*params)
+            
+            if isinstance(res, list) and self.shuffle_results:
+                random.shuffle(res)
+                
+            return res
+
         except Exception as e:
             traceback.print_exc()
             return "Something went wrong while executing the tool: " + str(e)
     
 class ToolsetComposer(Toolset):
-    def __init__(self, toolsets: List[Toolset]):
+    def __init__(self, toolsets: List[Toolset], *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
         self.toolsets = toolsets
         self.tools = [
             tool for toolset in self.toolsets

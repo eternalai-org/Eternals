@@ -11,7 +11,7 @@ class AsyncChatCompletion(object):
 
     def commit(self, result: InferenceResult):
         return self._cache.commit(result)
-        
+
     def __call__(self, *args, **kwds) -> InferenceResult:
         raise NotImplementedError("This method should be implemented by the subclass")
 
