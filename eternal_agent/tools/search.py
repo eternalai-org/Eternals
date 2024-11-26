@@ -23,7 +23,7 @@ def wiki_search(query: str, lang="en", top_k=C.DEFAULT_TOP_K) -> List[str]:
     
     resp = requests.get(url, headers=headers, params=params)
 
-# @register_decorator(RegistryCategory.ToolSet)
+@register_decorator(RegistryCategory.ToolSet)
 class WikipediaSearch(Toolset):
     TOOLSET_NAME = "Wikipedia search"
     PURPOSE = "to retrieve data from Wikipedia"

@@ -1,6 +1,10 @@
 import json
+from eternal_agent.models import Characteristic
 
 # this class is simply a system prompt builder
-class CharacterBase(object):
-    def __call__(self, characteristic_dict: dict) -> str:
+class CharacterBuilderBase(object):
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+    def __call__(self, characteristic: Characteristic) -> str:
         return "You are a highly intelligent agent, capable of executing any task assigned to you."

@@ -1,18 +1,18 @@
-from .base_agent import NonInteractiveAgentBase
-from eternal_agent.models import AgentLog
+from .base_agent import NonInteractiveAgentBase, InteractiveAgentBase
+from eternal_agent.models import Mission, NonInteractiveAgentLog
 import logging
 from eternal_agent.models import ChainState, InferenceState
 
 logger = logging.getLogger(__name__)
 
 from eternal_agent.registry import get_cls, RegistryCategory, register_decorator
-from eternal_agent.models import ClassRegistration, AgentLog     
+from eternal_agent.models import ClassRegistration, AgentLog
 from typing import List
 from eternal_agent.tools import ToolsetComposer
 from eternal_agent.llm import AsyncChatCompletion
 import json
 
-def format_prompt_v2(log: AgentLog, toolsets: ToolsetComposer):
+def format_prompt_v2(base_system_prompt: str, toolsets: ToolsetComposer):
     template_prompt = '''
 You have access to the following toolset:
 
@@ -38,15 +38,15 @@ Again, only return a single JSON!
     system_prompt = template_prompt.format(
         tools=base_tool_str,
         toolnames=tool_names,
-        base_system_prompt=log.system_prompt
+        base_system_prompt=base_system_prompt
     )
-    
+
     return system_prompt
 
 
-def render_conversation(log: AgentLog, tool: ToolsetComposer):
+def render_conversation(log: NonInteractiveAgentLog, tool: ToolsetComposer):
     system_prompt = format_prompt_v2(log, tool)
-    
+
     conversation = [
         {
             "role": "system",
@@ -75,13 +75,13 @@ def render_conversation(log: AgentLog, tool: ToolsetComposer):
             "role": "user",
             "content": json.dumps({
                 **user_message,
-                "system_reminder": log.system_reminder or "Please follow the instructions carefully"
+                "system_reminder": log.mission.system_reminder or "Please follow the instructions carefully"
             })
         })
 
     return conversation
 
-def parse_conversational_react_response(response: str, verbose=True) -> dict:
+def parse_conversational_react_response(response: str) -> dict:
     try:
         json_response = json.loads(response)
     except json.JSONDecodeError:
@@ -90,7 +90,6 @@ def parse_conversational_react_response(response: str, verbose=True) -> dict:
     segment_pad = {}
 
     if "thought" in json_response:
-        not verbose or logger.info("🤔 Thought: " + json_response["thought"])
         segment_pad.update({
             "thought": json_response["thought"]
         })
@@ -99,7 +98,6 @@ def parse_conversational_react_response(response: str, verbose=True) -> dict:
         segment_pad.update({
             "final_answer": json_response["final_answer"]
         })
-        not verbose or logger.info("🎯 Final Answer: " + json_response["final_answer"])
 
         return segment_pad
 
@@ -107,14 +105,11 @@ def parse_conversational_react_response(response: str, verbose=True) -> dict:
         segment_pad.update({
             "action": json_response["action"]
         })
-        not verbose or logger.info("🛠️ Action: " + json_response["action"])
 
         if "action_input" not in json_response:
             json_response["action_input"] = ""
 
     if "action_input" in json_response:
-        not verbose or logger.info("📥 Action Input: " + json_response["action_input"])
-
         segment_pad.update({
             "action_input": json_response["action_input"]
         })
@@ -144,39 +139,231 @@ def build_toolset(cfg: List[ClassRegistration]) -> ToolsetComposer:
         return None
 
     _obj = [e(**f.init_params) for e, f in zip(_cls, cfg)]
-    return ToolsetComposer(_obj) 
+    return ToolsetComposer(_obj)
 
 @register_decorator(RegistryCategory.NonInteractiveAgent)
 class ReactReasoningAgent(NonInteractiveAgentBase):
     SCRATCHPAD_LENGTH_LIMIT = 30
 
-    def __call__(self, log: AgentLog) -> AgentLog:
-        llm: AsyncChatCompletion = build_llm(log.llm_cfg)
-        tool = build_toolset(log.toolset_cfg)
-        
+    def __init__(self, log: NonInteractiveAgentLog) -> None:
+        super().__init__(log)
+
+        character_builder_cfg = log.character_builder_cfg
+        llm_cfg = log.llm_cfg
+        toolsets_cfg = log.toolset_cfg
+
+        self.llm: AsyncChatCompletion = get_cls(
+            RegistryCategory.LLM, llm_cfg.name
+        )(**llm_cfg.init_params)
+
+        self.character_builder = get_cls(
+            RegistryCategory.CharacterBuilder, character_builder_cfg.name
+        )(**character_builder_cfg.init_params)
+
+        self.toolsets = ToolsetComposer([
+            get_cls(RegistryCategory.ToolSet, e.name)(**e.init_params)
+            for e in toolsets_cfg
+        ])
+
+        self.base_system_prompt = self.character_builder(log.characteristic)
+
+    def __call__(self) -> NonInteractiveAgentLog:
+        log = self.log
+
         if log.state == ChainState.NEW:
             log.state = ChainState.RUNNING
 
-            system_prompt = format_prompt_v2(log, tool)
+            system_prompt = format_prompt_v2(self.base_system_prompt, self.toolsets)
             logger.info("🤖 System: " + system_prompt)
-            logger.info("👨‍💻 Task: " + log.task)
-            logger.info("🔔 Reminder: " + log.system_reminder)
+            logger.info("👨‍💻 Task: " + log.mission.task)
+            logger.info("🔔 Reminder: " + log.mission.system_reminder)
 
             log.scratchpad = [
                 {
-                    "task": log.task.replace('\n', ' ').strip(),
+                    "task": log.mission.task.replace('\n', ' ').strip(),
                 }
             ]
-            receipt = llm(render_conversation(log, tool))
+            receipt = self.llm(render_conversation(log, self.toolsets))
             logger.info("Inference receipt: " + receipt.id)
             log.infer_receipt = receipt.id
             return log
 
         elif log.state == ChainState.RUNNING:
-            result = llm.get(log.infer_receipt)
+            result = self.llm.get(log.infer_receipt)
             if result.state == InferenceState.EXECUTING:
                 return log
-            
+
+            if result.state == InferenceState.ERROR:
+                data = log.clone()
+                data.update(
+                    state=ChainState.ERROR,
+                    system_message=result.error
+                )
+                log.verbose and logger.error("Error in inference: " + result.error)
+                return NonInteractiveAgentLog(**data)
+
+            # update the scratch pad
+            message_response = result.result
+            pad: dict = parse_conversational_react_response(message_response)
+
+            if len(pad) == 0:
+                data = log.clone()
+                data.update(
+                    state=ChainState.ERROR,
+                    system_message="Invalid response from the agent message; Last message: {}".format(message_response)
+                )
+                return NonInteractiveAgentLog(**data)
+
+            if 'thought' in pad:
+                if 'thought' in log.scratchpad[-1] and any(
+                    k not in log.scratchpad[-1]
+                    for k in ['action', 'action_input', 'observation']
+                ):
+                    for kk in ['action', 'action_input', 'observation']:
+                        if kk not in log.scratchpad[-1]:
+                            log.scratchpad[-1][kk] = "Not found!"
+
+                    data = log.clone()
+                    data.update(
+                        state=ChainState.ERROR,
+                        system_message="Thought found without action/action input/observation"
+                    )
+
+                    log.verbose and logger.error("Thought found without action/action input/observation")
+
+                    return NonInteractiveAgentLog(**data)
+                else:
+                    log.scratchpad.append({
+                        "thought": pad['thought']
+                    })
+
+                    log.verbose and logger.info("🤔 Thought: " + pad['thought'])
+
+            if 'action' in pad:
+                if 'action_input' not in pad:
+                    log.scratchpad[-1]['action'] = pad['action']
+                    log.scratchpad[-1]['action_input'] = "Not found!"
+
+                    data = log.clone()
+                    data.update(
+                        state=ChainState.ERROR,
+                        system_message="Action input not found"
+                    )
+
+                    log.verbose and logger.error("Action input not found")
+                    return NonInteractiveAgentLog(**data)
+
+                elif 'question' in log.scratchpad[-1]:
+                    data = log.clone()
+                    data.update(
+                        state=ChainState.ERROR,
+                        system_message="No thought found"
+                    )
+
+                    log.verbose and logger.error("No thought found")
+                    return NonInteractiveAgentLog(**data)
+
+                action = pad['action']
+                action_input = pad['action_input']
+
+                log.verbose and logger.info("🛠️ Action: " + action)
+                log.verbose and logger.info("🔧 Action input: " + action_input)
+
+                observation = str(self.toolsets.execute(action, action_input))
+
+                log.verbose and logger.info(f"🔍 Observation: {observation}")
+
+                log.scratchpad[-1]['action'] = action
+                log.scratchpad[-1]['action_input'] = action_input
+                log.scratchpad[-1]['observation'] = observation
+            if 'final_answer' in pad:
+                if any(k in log.scratchpad[-1] for k in ['action', 'action_input', 'observation']):
+                    log.scratchpad.append({})
+
+                log.scratchpad[-1].update({
+                    "final_answer": pad['final_answer']
+                })
+
+                log.verbose and logger.info("🏁 Final answer: " + pad['final_answer'])
+                log.state = ChainState.DONE
+                log.system_message = "Final answer found"
+
+                return log
+
+            if len(log.scratchpad) > self.SCRATCHPAD_LENGTH_LIMIT:
+                data = log.clone()
+                data.update(
+                    state=ChainState.ERROR,
+                    system_message="Scratchpad length exceeded"
+                )
+
+                log.verbose and logger.error("Scratchpad length exceeded, stop here!")
+                return NonInteractiveAgentLog(**data)
+
+            receipt = self.llm(render_conversation(log, self.toolsets))
+            log.infer_receipt = receipt.id
+            return log
+
+        else:
+            data = log.clone()
+            data.update(
+                state=ChainState.ERROR,
+                system_message="Invalid state {}".format(log.state)
+            )
+            log.verbose and logger.error("Invalid state {}".format(log.state))
+            return NonInteractiveAgentLog(**data)
+
+@register_decorator(RegistryCategory.InteractiveAgent)
+class ReactChatAgent(InteractiveAgentBase):
+    SCRATCHPAD_LENGTH_LIMIT = 30
+
+    def __init__(self, log: NonInteractiveAgentLog) -> None:
+        super().__init__(log)
+
+        character_builder_cfg = log.character_builder_cfg
+        llm_cfg = log.llm_cfg
+        toolsets_cfg = log.toolset_cfg
+
+        self.llm: AsyncChatCompletion = get_cls(
+            RegistryCategory.LLM, llm_cfg.name
+        )(**llm_cfg.init_params)
+
+        self.character_builder = get_cls(
+            RegistryCategory.CharacterBuilder, character_builder_cfg.name
+        )(**character_builder_cfg.init_params)
+
+        self.toolsets = ToolsetComposer([
+            get_cls(RegistryCategory.ToolSet, e.name)(**e.init_params)
+            for e in toolsets_cfg
+        ])
+
+        self.base_system_prompt = self.character_builder(log.characteristic)
+
+    def _react_step(self, log: AgentLog, mission: Mission) -> AgentLog:
+
+        if log.state == ChainState.NEW:
+            log.state = ChainState.RUNNING
+
+            system_prompt = format_prompt_v2(self.base_system_prompt, self.toolsets)
+            logger.info("🤖 System: " + system_prompt)
+            logger.info("👨‍💻 Task: " + mission.task)
+            logger.info("🔔 Reminder: " + mission.system_reminder)
+
+            log.scratchpad = [
+                {
+                    "task": mission.task.replace('\n', ' ').strip(),
+                }
+            ]
+            receipt = self.llm(render_conversation(log, self.toolsets))
+            logger.info("Inference receipt: " + receipt.id)
+            log.infer_receipt = receipt.id
+            return log
+
+        elif log.state == ChainState.RUNNING:
+            result = self.llm.get(log.infer_receipt)
+            if result.state == InferenceState.EXECUTING:
+                return log
+
             if result.state == InferenceState.ERROR:
                 data = log.clone()
                 data.update(
@@ -184,7 +371,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     system_message=result.error
                 )
                 return AgentLog(**data)
-            
+
             # update the scratch pad
             message_response = result.result
             pad: dict = parse_conversational_react_response(message_response)
@@ -199,7 +386,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
 
             if 'thought' in pad:
                 if 'thought' in log.scratchpad[-1] and any(
-                    k not in log.scratchpad[-1] 
+                    k not in log.scratchpad[-1]
                     for k in ['action', 'action_input', 'observation']
                 ):
                     for kk in ['action', 'action_input', 'observation']:
@@ -211,23 +398,29 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                         state=ChainState.ERROR,
                         system_message="Thought found without action/action input/observation"
                     )
+
+                    log.verbose and logger.error("Thought found without action/action input/observation")
+
                     return AgentLog(**data)
                 else:
                     log.scratchpad.append({
                         "thought": pad['thought']
                     })
 
+                    log.verbose and logger.info("🤔 Thought: " + pad['thought'])
+
             if 'action' in pad:
                 if 'action_input' not in pad:
                     log.scratchpad[-1]['action'] = pad['action']
                     log.scratchpad[-1]['action_input'] = "Not found!"
-                    
+
                     data = log.clone()
                     data.update(
                         state=ChainState.ERROR,
                         system_message="Action input not found"
                     )
-                    
+
+                    log.verbose and logger.error("Action input not found")
                     return AgentLog(**data)
 
                 elif 'question' in log.scratchpad[-1]:
@@ -236,25 +429,32 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                         state=ChainState.ERROR,
                         system_message="No thought found"
                     )
-                    return AgentLog(**data) 
+
+                    log.verbose and logger.error("No thought found")
+                    return AgentLog(**data)
 
                 action = pad['action']
                 action_input = pad['action_input']
-                observation = str(tool.execute(action, action_input)) 
+
+                log.verbose and logger.info("🛠️ Action: " + action)
+                log.verbose and logger.info("🔧 Action input: " + action_input)
+
+                observation = str(self.toolsets.execute(action, action_input))
+
+                log.verbose and logger.info(f"🔍 Observation: {observation}")
 
                 log.scratchpad[-1]['action'] = action
                 log.scratchpad[-1]['action_input'] = action_input
                 log.scratchpad[-1]['observation'] = observation
-
-                logger.info("🔍 Observation: " + observation)
             if 'final_answer' in pad:
                 if any(k in log.scratchpad[-1] for k in ['action', 'action_input', 'observation']):
                     log.scratchpad.append({})
-    
+
                 log.scratchpad[-1].update({
                     "final_answer": pad['final_answer']
                 })
 
+                log.verbose and logger.info("🏁 Final answer: " + pad['final_answer'])
                 log.state = ChainState.DONE
                 log.system_message = "Final answer found"
 
@@ -266,10 +466,12 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     state=ChainState.ERROR,
                     system_message="Scratchpad length exceeded"
                 )
+
+                log.verbose and logger.error("Scratchpad length exceeded, stop here!")
                 return AgentLog(**data)
 
-            receipt = llm(render_conversation(log, tool))
-            log.infer_receipt = receipt.id 
+            receipt = self.llm(render_conversation(log, self.toolsets))
+            log.infer_receipt = receipt.id
             return log
 
         else:
@@ -278,4 +480,14 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                 state=ChainState.ERROR,
                 system_message="Invalid state {}".format(log.state)
             )
+            log.verbose and logger.error("Invalid state {}".format(log.state))
             return AgentLog(**data)
+
+    def __call__(self, mission: Mission) -> AgentLog:
+        log_data = self.log.clone()
+        log = AgentLog(**log_data)
+
+        while log.state not in [ChainState.DONE, ChainState.ERROR]:
+            log = self._react_step(log, mission)
+
+        return log

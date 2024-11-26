@@ -146,6 +146,29 @@
             "America First policies"
         ]
     },
+    "interactive": {
+        "toolset_cfg": [
+            {
+                "name": "WikipediaSearch"
+            }
+        ],
+        "llm_cfg": {
+            "name": "EternalAIChatCompletion",
+            "init_params": {
+                "model_name": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
+                "max_tokens": 1024,
+                "model_kwargs": {},
+                "temperature": 0.3,
+                "max_retries": 2
+            }
+        },
+        "character_builder": {
+            "name": "SimpleCharacterBuilder"
+        },
+        "agent_builder": {
+            "name": "SimpleChatAgent"
+        }
+    },
     "missions": [
         {
             "task": "Do something",
@@ -161,7 +184,7 @@
             "llm_cfg": {
                 "name": "EternalAIChatCompletion",
                 "init_params": {
-                    "model_name": "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+                    "model_name": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
                     "max_tokens": 1024,
                     "model_kwargs": {},
                     "temperature": 0.3,
@@ -169,7 +192,10 @@
                 }
             },
             "character_builder": {
-                "name": "TwitterUserCharacter"
+                "name": "TwitterUserCharacterBuilder",
+                "init_params": {
+                    "shuffle_everything": true
+                }
             },
             "agent_builder": {
                 "name": "ReactReasoningAgent"

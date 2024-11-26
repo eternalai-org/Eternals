@@ -1,14 +1,19 @@
 from typing import Any
-from .character_base import CharacterBase
+from .character_base import CharacterBuilderBase, Characteristic
 from eternal_agent.registry import register_decorator, RegistryCategory
 from eternal_agent import constant as C
+import random
 
 @register_decorator(RegistryCategory.CharacterBuilder)
-class TwitterUserCharacter(CharacterBase):
-    def __call__(self, characteristic_dict: dict) -> Any:
-        if "system_prompt" in characteristic_dict:
-            return characteristic_dict["system_prompt"]
+class TwitterUserCharacterBuilder(CharacterBuilderBase):
+    def __init__(self, shuffle_everything=True, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.shuffle_everything = shuffle_everything
         
+    def __call__(self, characteristic: Characteristic) -> str:
+        if characteristic.system_prompt is not None:
+            return characteristic.system_prompt
+
         characteristic_representation_template = '''
 You are {agent_name}, a highly intelligent agent, capable of executing any task assigned to you.
 
@@ -26,18 +31,23 @@ About {agent_name} (@{twitter_username}):
 Again, your name is {agent_name}, and your twitter account is @{twitter_username}.
 '''
 
-        agent_personal_info = characteristic_dict.get("agent_personal_info", {})
+        agent_personal_info = characteristic.agent_personal_info
         twitter_username = agent_personal_info.get("twitter_username", None)
 
         assert twitter_username is not None, "Twitter username is required"
         agent_name = agent_personal_info.get("agent_name", twitter_username)
         
         bio_data, lore_data, knowledge_data = \
-            characteristic_dict.get("bio", []),  \
-            characteristic_dict.get("lore", []), \
-            characteristic_dict.get("knowledge", [])
+            characteristic.bio, characteristic.lore, characteristic.knowledge
             
-        bio_repr, lore_repr, knowledge_repr = "# Bio", "# Lore", "# Knowledge"
+        if self.shuffle_everything:
+            random.shuffle(bio_data)
+            random.shuffle(lore_data)
+            random.shuffle(knowledge_data)
+            
+        bio_repr = "# Bio" if len(bio_data) > 0 else ""
+        lore_repr = "# Lore" if len(lore_data) > 0 else ""
+        knowledge_repr = "# Knowledge" if len(knowledge_data) > 0 else ""
 
         for bio in bio_data[:C.DEFAULT_BIO_MAX_LENGTH]:
             bio_repr += f"\n- {bio}"
@@ -48,14 +58,22 @@ Again, your name is {agent_name}, and your twitter account is @{twitter_username
         for knowledge in knowledge_data[:C.DEFAULT_KNOWLEDGE_MAX_LENGTH]:
             knowledge_repr += f"\n- {knowledge}"
             
-        example_posts_data = characteristic_dict.get("example_posts", [])
-        example_posts_repr = "# Example Posts"
+        example_posts_data = characteristic.example_posts
+
+        if self.shuffle_everything:
+            random.shuffle(example_posts_data)
+
+        example_posts_repr = "# Example Posts" if len(example_posts_data) > 0 else ""
         
         for post in example_posts_data[:C.DEFAULT_EXAMPLE_POSTS_MAX_LENGTH]:
             example_posts_repr += f"\n- {post}"
             
-        interested_topics_data = characteristic_dict.get("interested_topics", [])
-        interested_topics_repr = "# Interested Topics"
+        interested_topics_data = characteristic.interested_topics 
+
+        if self.shuffle_everything:
+            random.shuffle(interested_topics_data)
+
+        interested_topics_repr = "# Interested Topics" if len(interested_topics_data) > 0 else ""
         
         for topic in interested_topics_data[:C.DEFAULT_INTERESTED_TOPICS_MAX_LENGTH]:
             interested_topics_repr += f"\n- {topic}"

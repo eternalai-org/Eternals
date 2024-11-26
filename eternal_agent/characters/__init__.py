@@ -1,4 +1,4 @@
-from .character_base import CharacterBase
+from .character_base import CharacterBuilderBase
 
 modules = []
 import os
@@ -9,11 +9,11 @@ for file in os.listdir(current_dir):
         modules.append(os.path.basename(file)[:-3])
 
 __all__ = [
-    "CharacterBase",
+    "CharacterBuilderBase",
     *modules
 ]
 
 from . import *
 
 from . import simple_character
-DEFAULT_CHAT_COMPLETION_CHARACTER_BUILDER = simple_character.SimpleCharacter
+DEFAULT_CHAT_COMPLETION_CHARACTER_BUILDER = simple_character.SimpleCharacterBuilder

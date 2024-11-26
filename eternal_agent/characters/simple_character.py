@@ -1,14 +1,14 @@
 from typing import Any
-from .character_base import CharacterBase
+from .character_base import CharacterBuilderBase, Characteristic
 from eternal_agent.registry import register_decorator, RegistryCategory
 from eternal_agent import constant as C
 
 @register_decorator(RegistryCategory.CharacterBuilder)
-class SimpleCharacter(CharacterBase):
-    def __call__(self, characteristic_dict: dict) -> str:
-        if "system_prompt" in characteristic_dict:
-            return characteristic_dict["system_prompt"]
-        
+class SimpleCharacterBuilder(CharacterBuilderBase):
+    def __call__(self, characteristic: Characteristic) -> str:
+        if characteristic.system_prompt is not None:
+            return characteristic.system_prompt
+
         characteristic_representation_template = '''
 You are {name}, capable of executing any task assigned to you.
 
@@ -21,15 +21,17 @@ Here is a brief overview of your capabilities:
 
 {interested_topics}'''
 
-        personal_info = characteristic_dict.get("agent_personal_info", {})
+        personal_info = characteristic.agent_personal_info
         agent_name = personal_info.get("agent_name", "a highly intelligent AI assistant")
 
         bio_data, lore_data, knowledge_data = \
-            characteristic_dict.get("bio", []),  \
-            characteristic_dict.get("lore", []), \
-            characteristic_dict.get("knowledge", [])
+            characteristic.bio,  \
+            characteristic.lore, \
+            characteristic.knowledge
 
-        bio_repr, lore_repr, knowledge_repr = "# Bio", "# Lore", "# Knowledge"
+        bio_repr = "# Bio" if len(bio_data) > 0 else ""
+        lore_repr = "# Lore" if len(lore_data) > 0 else ""
+        knowledge_repr = "# Knowledge" if len(knowledge_data) > 0 else ""
 
         for bio in bio_data[:C.DEFAULT_BIO_MAX_LENGTH]:
             bio_repr += f"\n- {bio}"
@@ -39,9 +41,9 @@ Here is a brief overview of your capabilities:
             
         for knowledge in knowledge_data[:C.DEFAULT_KNOWLEDGE_MAX_LENGTH]:
             knowledge_repr += f"\n- {knowledge}"
-            
-        interested_topics_data = characteristic_dict.get("interested_topics", [])
-        interested_topics_repr = "# Interested Topics"
+
+        interested_topics_data = characteristic.interested_topics
+        interested_topics_repr = "# Interested Topics" if len(interested_topics_data) > 0 else ""
         
         for topic in interested_topics_data[:C.DEFAULT_INTERESTED_TOPICS_MAX_LENGTH]:
             interested_topics_repr += f"\n- {topic}"
