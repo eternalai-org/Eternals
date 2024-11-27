@@ -8,6 +8,7 @@ from eternal_agent import constant as C
 
 logger = logging.getLogger(__name__)
 
+# TODO: convert the openai standard to async standard of eternal AI 
 @register_decorator(RegistryCategory.LLM)
 class EternalAIChatCompletion(AsyncChatCompletion):
     DEFAULT_PARAMS = {
