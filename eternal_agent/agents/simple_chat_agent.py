@@ -6,7 +6,7 @@ from eternal_agent.tools import ToolsetComposer
 
 @register_decorator(RegistryCategory.InteractiveAgent)
 class SimpleChatAgent(InteractiveAgentBase):
-    def __init__(self, log: AgentLog, max_conversation_length=30) -> None:
+    def __init__(self, log: AgentLog, max_conversation_length=30, *args, **kwargs) -> None:
         super().__init__(log)
         self.max_conversation_length = max_conversation_length + (1 - max_conversation_length % 2)
         
