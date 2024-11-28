@@ -69,7 +69,8 @@ class EternalAIChatCompletion(AsyncChatCompletion):
         max_retries: int, 
         eternal_api_base: str=C.ETERNAL_BACKEND_API, 
         eternal_api_key: str=C.ETERNAL_BACKEND_API_APIKEY,
-        eternal_chain_id: str=C.ETERNAL_API_CHAIN_ID
+        eternal_chain_id: str=C.ETERNAL_API_CHAIN_ID,
+        *args, **kwargs
     ):
         super().__init__()
 

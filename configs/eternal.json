@@ -166,7 +166,10 @@
             "name": "SimpleCharacterBuilder"
         },
         "agent_builder": {
-            "name": "SimpleChatAgent"
+            "name": "ReactChatAgent",
+            "init_params": {
+                "verbose": true
+            }
         }
     },
     "missions": [
