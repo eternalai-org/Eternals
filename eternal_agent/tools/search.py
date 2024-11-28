@@ -11,9 +11,9 @@ import re
 def remove_html_tags(text: str) -> str:
     return re.sub(re.compile('<.*?>'), '', text)
 
-def wiki_search(query: str, lang="en", top_k=C.DEFAULT_TOP_K) -> List[str]:
+def wiki_search(query: str, lang="en", top_k=20) -> List[str]:
     headers = {
-        'User-Agent': C.APP_NAME
+        'User-Agent': "eternals"
     }
     url = f"https://api.wikimedia.org/core/v1/wikipedia/{lang}/search/page"
     params = {
@@ -22,6 +22,19 @@ def wiki_search(query: str, lang="en", top_k=C.DEFAULT_TOP_K) -> List[str]:
     }
     
     resp = requests.get(url, headers=headers, params=params)
+    resp_json = resp.json()
+    
+    pages = resp_json.get("pages", [])
+    
+    info = []
+    
+    for page in pages:
+        info.append({
+            "title": page.get("title", ""),
+            "snippet": remove_html_tags(page.get("excerpt", ""))
+        })
+        
+    return info
 
 @register_decorator(RegistryCategory.ToolSet)
 class WikipediaSearch(Toolset):
@@ -39,6 +52,6 @@ class WikipediaSearch(Toolset):
                     description="Query to search"
                 )
             ],
-            executor=lambda query: "Method not implemented"
+            executor=lambda query: wiki_search(query)
         )
     ]
