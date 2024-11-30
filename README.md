@@ -223,7 +223,7 @@ ETERNAL_X_API_APIKEY=PUT_YOUR_API_KEY_HERE
 
 ## Usage
 
-Our repo is created to be used for many purposes.
+The repository is created to be used for many purposes.
 
 ### Start the daemon to schedule missions periodically 
 
@@ -238,7 +238,7 @@ python daemon.py
 <!-- label -->
 
 
-To integrate your eternal dAgent to your existing `python project`, run the following commands to install the `eternal_agent` package:
+To integrate a dAgent to your existing `python project`, run the following commands to install the `eternal_agent` package:
 
 ```bash
 python -m pip install .
@@ -253,9 +253,9 @@ Then, in your python project, just import the `eternal_agent`. Documentations fo
 import eternal_agent
 ```
 
-### Chat with your eternal 
+### Chat with a dAgent 
 
-To chat with the defined eternal, please execute these following steps:
+To chat with a dAgent, please execute these following steps:
 
 - Install the `eternal_agent` package first: 
 
@@ -263,7 +263,7 @@ To chat with the defined eternal, please execute these following steps:
 python -m pip install .
 ```
 
-- To chat with the dAgent, just simply run:
+- And run:
 
 ```bash
 python toolkits/chat-lite.py
