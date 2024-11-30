@@ -1,6 +1,6 @@
-# EternalAI Agent
+# dAgent
 
-EternalAI Agent is a conversational agent that can perform various tasks using a combination of toolsets and language models. The agent can be configured to execute multiple missions, each with its own set of toolsets and language models.
+dAgent is a decentralized conversational agent that can perform various tasks using a combination of toolsets and language models. The dAgent can be configured to execute multiple missions, each with its own set of toolsets and language models.
 
 ## Prerequisites
 In this project, we tested with ***Python 3.10.0***, but it should work with any version of Python 3.10.x or higher.
@@ -120,18 +120,18 @@ A sample configuration file, [**eternal.json**](configs/eternal.json), is provi
 
 ### **Characteristic**
 
-- **`agent_personal_info`**: Contains information about the agent, including:
-    - **`twitter_username`**: The Twitter username of the agent.
-    - **`agent_name`**: The name of the agent.
-- **`bio`**: An array of strings representing the agent's bio.
-- **`lore`**: An array of strings representing the agent's lore or background information.
-- **`knowledge`**: An array of strings representing the agent's knowledge or facts.
-- **`example_posts`**: An array of strings representing example posts the agent might make.
-- **`topics`**: An array of strings representing topics the agent might discuss.
+- **`agent_personal_info`**: Contains information about the dAgent, including:
+    - **`twitter_username`**: The Twitter username of the dAgent.
+    - **`agent_name`**: The name of the dAgent.
+- **`bio`**: An array of strings representing the dAgent's bio.
+- **`lore`**: An array of strings representing the dAgent's lore or background information.
+- **`knowledge`**: An array of strings representing the dAgent's knowledge or facts.
+- **`example_posts`**: An array of strings representing example posts the dAgent might make.
+- **`topics`**: An array of strings representing topics the dAgent might discuss.
 
 ### **Missions**
 
-- **`task`**: A string representing the task or mission of the agent.
+- **`task`**: A string representing the task or mission of the dAgent.
 - **`system_reminder`**: A string representing a reminder or note for the system.
 - **`toolset_cfg`**: An array of objects representing the toolset configurations, including:
     - **`name`**: The name of the toolset.
@@ -146,25 +146,25 @@ A sample configuration file, [**eternal.json**](configs/eternal.json), is provi
         - **`temperature`**: The temperature of the LLM, controlling the level of randomness in its responses.
         - **`max_retries`**: The maximum number of retries for the LLM.
 - **`scheduling`**: An object representing the scheduling configuration, including:
-    - **`interval_minutes`**: The interval at which the agent will perform its task, in minutes.
+    - **`interval_minutes`**: The interval at which the dAgent will perform its task, in minutes.
 
 
 The configuration file is in JSON format and contains the following fields:
 
 ### **Characteristic**
 
-- **`agent_personal_info`**: Contains information about the agent, including:
-    - **`twitter_username`**: The Twitter username of the agent.
-    - **`agent_name`**: The name of the agent.
-- **`bio`**: An array of strings representing the agent's bio.
-- **`lore`**: An array of strings representing the agent's lore or background information.
-- **`knowledge`**: An array of strings representing the agent's knowledge or facts.
-- **`example_posts`**: An array of strings representing example posts the agent might make.
-- **`topics`**: An array of strings representing topics the agent might discuss.
+- **`agent_personal_info`**: Contains information about the dAgent, including:
+    - **`twitter_username`**: The Twitter username of the dAgent.
+    - **`agent_name`**: The name of the dAgent.
+- **`bio`**: An array of strings representing the dAgent's bio.
+- **`lore`**: An array of strings representing the dAgent's lore or background information.
+- **`knowledge`**: An array of strings representing the dAgent's knowledge or facts.
+- **`example_posts`**: An array of strings representing example posts the dAgent might make.
+- **`topics`**: An array of strings representing topics the dAgent might discuss.
 
 ### **Missions**
 
-- **`task`**: A string representing the task or mission of the agent.
+- **`task`**: A string representing the task or mission of the dAgent.
 - **`system_reminder`**: A string representing a reminder or note for the system.
 - **`toolset_cfg`**: An array of objects representing the toolset configurations, including:
     - **`name`**: The name of the toolset.
@@ -179,7 +179,7 @@ The configuration file is in JSON format and contains the following fields:
         - **`temperature`**: The temperature of the LLM, controlling the level of randomness in its responses.
         - **`max_retries`**: The maximum number of retries for the LLM.
 - **`scheduling`**: An object representing the scheduling configuration, including:
-    - **`interval_minutes`**: The interval at which the agent will perform its task, in minutes.
+    - **`interval_minutes`**: The interval at which the dAgent will perform its task, in minutes.
     
 
 2. **Environment Variables**
@@ -227,7 +227,7 @@ Our repo is created to be used for many purposes.
 
 ### Start the daemon to schedule missions periodically 
 
-To start the agent, run the following command:
+To start the dAgent, run the following command:
 
 ```bash
 python daemon.py
@@ -238,7 +238,7 @@ python daemon.py
 <!-- label -->
 
 
-To integrate your eternal agent to your existing `python project`, run the following commands to install the `eternal_agent` package:
+To integrate your eternal dAgent to your existing `python project`, run the following commands to install the `eternal_agent` package:
 
 ```bash
 python -m pip install .
@@ -263,7 +263,7 @@ To chat with the defined eternal, please execute these following steps:
 python -m pip install .
 ```
 
-- To chat with the agent, just simply run:
+- To chat with the dAgent, just simply run:
 
 ```bash
 python toolkits/chat-lite.py
