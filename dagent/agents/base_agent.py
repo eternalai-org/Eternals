@@ -1,28 +1,28 @@
 from typing import Any
-from eternal_agent.models import AgentLog, NonInteractiveAgentLog, ChainState, Mission, AssistantResponse
+from dagent.models import DAgentLog, NonInteractiveDAgentLog, ChainState, Mission, DAgentResponse
 
-class InteractiveAgentBase(object):
-    def __init__(self, log: AgentLog) -> None:
+class InteractiveDAgentBase(object):
+    def __init__(self, log: DAgentLog) -> None:
         self.log = log
         
     @property
     def id(self) -> str:
         return self.log.id
 
-    def step(self, mission: Mission) -> AssistantResponse:
+    def step(self, mission: Mission) -> DAgentResponse:
         resp = self.__call__(mission)
         
         assert resp.scratchpad[-1]['role'] == 'assistant'
         
-        return AssistantResponse(
+        return DAgentResponse(
             content=resp.scratchpad[-1]['content']
         )
 
-    def __call__(self, log: Mission) -> AgentLog:
+    def __call__(self, log: Mission) -> DAgentLog:
         raise NotImplementedError("You must implement this method in your subclass")
 
-class NonInteractiveAgentBase(object):
-    def __init__(self, log: NonInteractiveAgentLog) -> None:
+class NonInteractiveDAgentBase(object):
+    def __init__(self, log: NonInteractiveDAgentLog) -> None:
         self.log = log
         
     @property
@@ -33,11 +33,11 @@ class NonInteractiveAgentBase(object):
     def state(self) -> ChainState:
         return self.log.state
 
-    def step(self) -> NonInteractiveAgentLog:
+    def step(self) -> NonInteractiveDAgentLog:
         if self.log.state == ChainState.NEW or self.log.state == ChainState.RUNNING:
             return self.__call__()
 
         return self.log
 
-    def __call__(self) -> NonInteractiveAgentLog:
+    def __call__(self) -> NonInteractiveDAgentLog:
         raise NotImplementedError("You must implement this method in your subclass")

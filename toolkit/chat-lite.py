@@ -8,7 +8,7 @@ if not load_dotenv():
     logger.warning("Failed to load .env file")
 
 from argparse import ArgumentParser
-from eternal_agent import registry, models, agents
+from dagent import registry, models, agents
 import os
 import sys
 import json
@@ -51,7 +51,7 @@ def main():
     ]
     
     logger.info(
-        "\n\nCharacter builder: %s\n\nAgent builder: %s\n\nLLM: %s\n\nToolsets: %s",
+        "\n\nCharacter builder: %s\n\nDAgent builder: %s\n\nLLM: %s\n\nToolsets: %s",
         character_builder_cfg, agent_builder_cfg, llm_cfg, toolsets_cfg
     )    
     
@@ -60,7 +60,7 @@ def main():
 
     characteristic = models.Characteristic(**eternal_cfg["characteristic"])
 
-    model = models.AgentLog(
+    model = models.DAgentLog(
         characteristic=characteristic,
         llm_cfg=llm_cfg,
         agent_builder_cfg=agent_builder_cfg,
@@ -70,7 +70,12 @@ def main():
     
     logger.info("Building agent...")
     
-    agent: agents.InteractiveAgentBase = registry.get_cls(registry.RegistryCategory.InteractiveAgent, agent_builder_cfg.name)(
+    agent_cls: agents.InteractiveDAgentBase = registry.get_cls(registry.RegistryCategory.InteractiveDAgent, agent_builder_cfg.name)
+    
+    if agent_cls is None:
+        raise ValueError(f"DAgent class {agent_builder_cfg.name} not found")
+    
+    agent = agent_cls(
         model,
         **agent_builder_cfg.init_params
     )
@@ -88,7 +93,7 @@ def main():
                 input_message = sys.stdin.readline().strip(" \t\n\r")
 
             try:
-                resp: models.AssistantResponse = agent.step(
+                resp: models.DAgentResponse = agent.step(
                     models.Mission(system_reminder="", task=input_message)
                 )
 

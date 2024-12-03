@@ -1,15 +1,15 @@
-from .base_agent import NonInteractiveAgentBase, InteractiveAgentBase
-from eternal_agent.models import Mission, NonInteractiveAgentLog
+from .base_agent import NonInteractiveDAgentBase, InteractiveDAgentBase
+from dagent.models import Mission, NonInteractiveDAgentLog
 import logging
-from eternal_agent.models import ChainState, InferenceState
+from dagent.models import ChainState, InferenceState
 
 logger = logging.getLogger(__name__)
 
-from eternal_agent.registry import get_cls, RegistryCategory, register_decorator
-from eternal_agent.models import ClassRegistration, AgentLog
+from dagent.registry import get_cls, RegistryCategory, register_decorator
+from dagent.models import ClassRegistration, DAgentLog
 from typing import List
-from eternal_agent.tools import ToolsetComposer
-from eternal_agent.llm import AsyncChatCompletion
+from dagent.tools import ToolsetComposer
+from dagent.llm import AsyncChatCompletion
 import json
 
 def format_prompt_v2(base_system_prompt: str, toolsets: ToolsetComposer):
@@ -44,7 +44,7 @@ Again, only return a single JSON!
     return system_prompt
 
 
-def render_conversation(log: NonInteractiveAgentLog, tool: ToolsetComposer):
+def render_conversation(log: NonInteractiveDAgentLog, tool: ToolsetComposer):
     system_prompt = format_prompt_v2(log, tool)
 
     conversation = [
@@ -71,7 +71,7 @@ def render_conversation(log: NonInteractiveAgentLog, tool: ToolsetComposer):
                 "content": json.dumps(assistant_message)
             })
 
-        if isinstance(log, NonInteractiveAgentLog):    
+        if isinstance(log, NonInteractiveDAgentLog):    
             conversation.append({
                 "role": "user",
                 "content": json.dumps({
@@ -148,11 +148,11 @@ def build_toolset(cfg: List[ClassRegistration]) -> ToolsetComposer:
     _obj = [e(**f.init_params) for e, f in zip(_cls, cfg)]
     return ToolsetComposer(_obj)
 
-@register_decorator(RegistryCategory.NonInteractiveAgent)
-class ReactReasoningAgent(NonInteractiveAgentBase):
+@register_decorator(RegistryCategory.NonInteractiveDAgent)
+class ReactReasoningDAgent(NonInteractiveDAgentBase):
     SCRATCHPAD_LENGTH_LIMIT = 30
 
-    def __init__(self, log: NonInteractiveAgentLog, verbose=True, *args, **kwargs) -> None:
+    def __init__(self, log: NonInteractiveDAgentLog, verbose=True, *args, **kwargs) -> None:
         super().__init__(log)
 
         character_builder_cfg = log.character_builder_cfg
@@ -175,7 +175,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
 
         self.base_system_prompt = self.character_builder(log.characteristic)
 
-    def __call__(self) -> NonInteractiveAgentLog:
+    def __call__(self) -> NonInteractiveDAgentLog:
         log = self.log
 
         if log.state == ChainState.NEW:
@@ -208,7 +208,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     system_message=result.error
                 )
                 self.verbose and logger.error("Error in inference: " + result.error)
-                return NonInteractiveAgentLog(**data)
+                return NonInteractiveDAgentLog(**data)
 
             # update the scratch pad
             message_response = result.result
@@ -220,7 +220,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     state=ChainState.ERROR,
                     system_message="Invalid response from the agent message; Last message: {}".format(message_response)
                 )
-                return NonInteractiveAgentLog(**data)
+                return NonInteractiveDAgentLog(**data)
 
             if 'thought' in pad:
                 if 'thought' in log.scratchpad[-1] and any(
@@ -239,7 +239,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
 
                     self.verbose and logger.error("Thought found without action/action input/observation")
 
-                    return NonInteractiveAgentLog(**data)
+                    return NonInteractiveDAgentLog(**data)
                 else:
                     log.scratchpad.append({
                         "thought": pad['thought']
@@ -259,7 +259,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     )
 
                     self.verbose and logger.error("Action input not found")
-                    return NonInteractiveAgentLog(**data)
+                    return NonInteractiveDAgentLog(**data)
 
                 elif 'question' in log.scratchpad[-1]:
                     data = log.clone()
@@ -269,7 +269,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                     )
 
                     self.verbose and logger.error("No thought found")
-                    return NonInteractiveAgentLog(**data)
+                    return NonInteractiveDAgentLog(**data)
 
                 action = pad['action']
                 action_input = pad['action_input']
@@ -306,7 +306,7 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                 )
 
                 self.verbose and logger.error("Scratchpad length exceeded, stop here!")
-                return NonInteractiveAgentLog(**data)
+                return NonInteractiveDAgentLog(**data)
 
             receipt = self.llm(render_conversation(log, self.toolsets))
             log.infer_receipt = receipt.id
@@ -319,13 +319,13 @@ class ReactReasoningAgent(NonInteractiveAgentBase):
                 system_message="Invalid state {}".format(log.state)
             )
             self.verbose and logger.error("Invalid state {}".format(log.state))
-            return NonInteractiveAgentLog(**data)
+            return NonInteractiveDAgentLog(**data)
 
-@register_decorator(RegistryCategory.InteractiveAgent)
-class ReactChatAgent(InteractiveAgentBase):
+@register_decorator(RegistryCategory.InteractiveDAgent)
+class ReactChatDAgent(InteractiveDAgentBase):
     SCRATCHPAD_LENGTH_LIMIT = 30
 
-    def __init__(self, log: NonInteractiveAgentLog, verbose=True, *args, **kwargs) -> None:
+    def __init__(self, log: NonInteractiveDAgentLog, verbose=True, *args, **kwargs) -> None:
         super().__init__(log)
 
         character_builder_cfg = log.character_builder_cfg
@@ -349,7 +349,7 @@ class ReactChatAgent(InteractiveAgentBase):
 
         self.base_system_prompt = self.character_builder(log.characteristic)
 
-    def _react_step(self, log: AgentLog, mission: Mission) -> AgentLog:
+    def _react_step(self, log: DAgentLog, mission: Mission) -> DAgentLog:
 
         if log.state == ChainState.NEW:
             log.state = ChainState.RUNNING
@@ -380,7 +380,7 @@ class ReactChatAgent(InteractiveAgentBase):
                     state=ChainState.ERROR,
                     system_message=result.error
                 )
-                return AgentLog(**data)
+                return DAgentLog(**data)
 
             # update the scratch pad
             message_response = result.result
@@ -392,7 +392,7 @@ class ReactChatAgent(InteractiveAgentBase):
                     state=ChainState.ERROR,
                     system_message="Invalid response from the agent message; Last message: {}".format(message_response)
                 )
-                return AgentLog(**data)
+                return DAgentLog(**data)
 
             if 'thought' in pad:
                 if 'thought' in log.scratchpad[-1] and any(
@@ -411,7 +411,7 @@ class ReactChatAgent(InteractiveAgentBase):
 
                     self.verbose and logger.error("Thought found without action/action input/observation")
 
-                    return AgentLog(**data)
+                    return DAgentLog(**data)
                 else:
                     log.scratchpad.append({
                         "thought": pad['thought']
@@ -431,7 +431,7 @@ class ReactChatAgent(InteractiveAgentBase):
                     )
 
                     self.verbose and logger.error("Action input not found")
-                    return AgentLog(**data)
+                    return DAgentLog(**data)
 
                 elif 'question' in log.scratchpad[-1]:
                     data = log.clone()
@@ -441,7 +441,7 @@ class ReactChatAgent(InteractiveAgentBase):
                     )
 
                     self.verbose and logger.error("No thought found")
-                    return AgentLog(**data)
+                    return DAgentLog(**data)
 
                 action = pad['action']
                 action_input = pad['action_input']
@@ -478,7 +478,7 @@ class ReactChatAgent(InteractiveAgentBase):
                 )
 
                 self.verbose and logger.error("Scratchpad length exceeded, stop here!")
-                return AgentLog(**data)
+                return DAgentLog(**data)
 
             receipt = self.llm(render_conversation(log, self.toolsets))
             log.infer_receipt = receipt.id
@@ -491,11 +491,11 @@ class ReactChatAgent(InteractiveAgentBase):
                 system_message="Invalid state {}".format(log.state)
             )
             self.verbose and logger.error("Invalid state {}".format(log.state))
-            return AgentLog(**data)
+            return DAgentLog(**data)
 
-    def __call__(self, mission: Mission) -> AgentLog:
+    def __call__(self, mission: Mission) -> DAgentLog:
         log_data = self.log.clone()
-        log = AgentLog(**log_data)
+        log = DAgentLog(**log_data)
         
         chat_history = [
             {

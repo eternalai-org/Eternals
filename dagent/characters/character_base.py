@@ -1,5 +1,5 @@
 import json
-from eternal_agent.models import Characteristic
+from dagent.models import Characteristic
 
 # this class is simply a system prompt builder
 class CharacterBuilderBase(object):

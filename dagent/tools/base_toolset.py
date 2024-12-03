@@ -1,5 +1,5 @@
 from typing import List
-from eternal_agent.models import Tool
+from dagent.models import Tool
 import traceback
 import random
 

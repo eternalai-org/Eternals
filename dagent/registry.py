@@ -6,8 +6,8 @@ logger  = logging.getLogger(__name__)
 
 class RegistryCategory(str, Enum):
     ToolSet = "toolset"
-    NonInteractiveAgent = "non_interactive_agent"
-    InteractiveAgent = "interactive_agent"
+    NonInteractiveDAgent = "non_interactive_dagent"
+    InteractiveDAgent = "interactive_dagent"
     LLM = "llm"
     CharacterBuilder = "character_builder"
 

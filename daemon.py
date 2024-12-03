@@ -7,16 +7,16 @@ from dotenv import load_dotenv
 if not load_dotenv():
     logger.warning("No .env file found")
 
-import eternal_agent
+import dagent
 import sys
 import schedule
 import time
 from argparse import ArgumentParser
 
-import eternal_agent.utils
+import dagent.utils
 import os
 import json
-from eternal_agent.registry import get_registered, RegistryCategory
+from dagent.registry import get_registered, RegistryCategory
 
 from fastapi import FastAPI
 import uvicorn
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 def parse_opt(
     daemon_config_file = os.path.join(
-        eternal_agent.utils.get_script_dir(__file__), 
+        dagent.utils.get_script_dir(__file__), 
         "configs/daemon.json"
     )
 ):
@@ -40,9 +40,9 @@ def parse_opt(
         with open(daemon_config_file, "r") as f:
             daemon_config = json.load(f)
 
-    parser = ArgumentParser(description="Eternal Agent Daemon")
+    parser = ArgumentParser(description="Decentralized-agent Daemon")
     parser.add_argument("-c", "--agent-config-file", type=str, 
-                        default=os.path.join(eternal_agent.utils.get_script_dir(__file__), "configs/eternal.json"),
+                        default=os.path.join(dagent.utils.get_script_dir(__file__), "configs/eternal.json"),
                         help="Path to the agent config file. Used to init the non-interactive auto-agents.")
 
     parser.add_argument(
@@ -66,7 +66,7 @@ def parse_opt(
 
     return parser.parse_args()
 
-def http_service(provider: eternal_agent.service.AutoServiceProvider):
+def http_service(provider: dagent.service.AutoServiceProvider):
     opts = parse_opt()
 
     fast_api = FastAPI()
@@ -84,7 +84,7 @@ def main():
     for item in [RegistryCategory.LLM, RegistryCategory.ToolSet]:
         logger.info(f"Registered {item}: {get_registered(item)}")
     
-    service = eternal_agent.service.AutoServiceProvider()
+    service = dagent.service.AutoServiceProvider()
     args = parse_opt()
     assert os.path.exists(args.agent_config_file), f"Config file {args.agent_config_file} not found"
     
