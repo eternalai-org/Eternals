@@ -1,5 +1,5 @@
-from eternal_agent.utils import SimpleCacheMechanism
-from eternal_agent.models import InferenceResult
+from dagent.utils import SimpleCacheMechanism
+from dagent.models import InferenceResult
 from typing import Optional
 import uuid 
 

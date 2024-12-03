@@ -34,10 +34,3 @@ class SimpleCacheMechanism(object):
 
     def get(self, id: str, default=None) -> Optional[InferenceResult]:
         return self._log.get(id, default)
-
-
-def build_agent():
-    pass
-
-def build_character():
-    pass   

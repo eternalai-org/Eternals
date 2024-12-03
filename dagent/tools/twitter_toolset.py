@@ -1,6 +1,6 @@
 from typing import List
-from eternal_agent.models import Tool, ToolParam, ToolParamDtype
-from eternal_agent.registry import RegistryCategory, register_decorator
+from dagent.models import Tool, ToolParam, ToolParamDtype
+from dagent.registry import RegistryCategory, register_decorator
 from . base_toolset import Toolset
 from . import functional
 

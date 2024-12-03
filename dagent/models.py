@@ -62,7 +62,7 @@ class Characteristic(BaseModel):
     example_posts: Optional[List[str]] = []
     example_messages: Optional[List[str]] = []
 
-class AgentLog(BaseModel):
+class DAgentLog(BaseModel):
     # auto
     id: str = Field(default_factory=lambda: f"fun-{random_uuid()}")
     
@@ -105,10 +105,10 @@ class Mission(BaseModel):
     system_reminder: str
     task: str
 
-class AssistantResponse(BaseModel):
+class DAgentResponse(BaseModel):
     content: str
 
-class NonInteractiveAgentLog(AgentLog):
+class NonInteractiveDAgentLog(DAgentLog):
     mission: Mission
     
     def clone(self):

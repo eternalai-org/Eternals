@@ -4,7 +4,7 @@ from setuptools import setup
 
 version = {}
 
-with open("eternal_agent/version.py") as fp:
+with open("dagent/version.py") as fp:
     exec(fp.read(), version)
 
 def get_long_description():
@@ -21,15 +21,15 @@ dependencies = [
 ]
 
 setup(
-    name="eternal_agent",
+    name="dagent",
     version=version["__version__"],
     author="EternalAI",
     author_email="dev@eternalai.org",
-    description="EternalAI Agent is a conversational agent that can perform various tasks using a combination of toolsets and language models. The agent can be configured to execute multiple missions, each with its own set of toolsets and language models.",
+    description="EternalAI Agent is a conversational decentralized agent that can perform various tasks using a combination of toolsets and language models. The agent can be configured to execute multiple missions, each with its own set of toolsets and language models.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/eternalai-org/Eternals",
-    packages=find_packages(exclude=["eternal_agent.service.py"], include=["eternal_agent", "eternal_agent.*"]),
+    url="https://github.com/eternalai-org/dagent",
+    packages=find_packages(exclude=["dagent.service.py"], include=["dagent", "dagent.*"]),
     python_requires=">=3.10.0",
     install_requires=dependencies,
     keywords="Python, LLM, Decentralized AI, Modular design",

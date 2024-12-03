@@ -1,4 +1,4 @@
-from .base_agent import InteractiveAgentBase, NonInteractiveAgentBase
+from .base_agent import InteractiveDAgentBase, NonInteractiveDAgentBase
 
 modules = []
 import os
@@ -9,8 +9,8 @@ for file in os.listdir(current_dir):
         modules.append(os.path.basename(file)[:-3])
 
 __all__ = [
-    "InteractiveAgentBase", 
-    "NonInteractiveAgentBase",
+    "InteractiveDAgentBase", 
+    "NonInteractiveDAgentBase",
     *modules
 ]
 

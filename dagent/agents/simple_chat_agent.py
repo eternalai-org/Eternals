@@ -1,12 +1,12 @@
-from eternal_agent.models import Mission
-from .base_agent import InteractiveAgentBase, AgentLog
-from eternal_agent.registry import register_decorator, get_cls, RegistryCategory
-from eternal_agent.llm import AsyncChatCompletion
-from eternal_agent.tools import ToolsetComposer
+from dagent.models import Mission
+from .base_agent import InteractiveDAgentBase, DAgentLog
+from dagent.registry import register_decorator, get_cls, RegistryCategory
+from dagent.llm import AsyncChatCompletion
+from dagent.tools import ToolsetComposer
 
-@register_decorator(RegistryCategory.InteractiveAgent)
-class SimpleChatAgent(InteractiveAgentBase):
-    def __init__(self, log: AgentLog, max_conversation_length=30, *args, **kwargs) -> None:
+@register_decorator(RegistryCategory.InteractiveDAgent)
+class SimpleChatDAgent(InteractiveDAgentBase):
+    def __init__(self, log: DAgentLog, max_conversation_length=30, *args, **kwargs) -> None:
         super().__init__(log)
         self.max_conversation_length = max_conversation_length + (1 - max_conversation_length % 2)
         
@@ -43,7 +43,7 @@ class SimpleChatAgent(InteractiveAgentBase):
                 
         return chat_history
 
-    def __call__(self, mission: Mission) -> AgentLog:
+    def __call__(self, mission: Mission) -> DAgentLog:
         self.log.scratchpad.append({
             'role': 'user',
             'content': mission.task

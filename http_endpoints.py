@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse
-from eternal_agent.service import AutoServiceProvider
-from eternal_agent.models import ChatSession
+from dagent.service import AutoServiceProvider
+from dagent.models import ChatSession
 
 router = APIRouter()
 api_v1_router = APIRouter()
