@@ -1,7 +1,7 @@
 from typing import Any
 from .character_base import CharacterBuilderBase, Characteristic
-from eternal_agent.registry import register_decorator, RegistryCategory
-from eternal_agent import constant as C
+from dagent.registry import register_decorator, RegistryCategory
+from dagent import constant as C
 import random
 
 @register_decorator(RegistryCategory.CharacterBuilder)

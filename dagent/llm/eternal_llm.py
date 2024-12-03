@@ -1,10 +1,10 @@
 from .base_llm import AsyncChatCompletion
-from eternal_agent.registry import RegistryCategory, register_decorator
+from dagent.registry import RegistryCategory, register_decorator
 from typing import List, Dict
 import logging
-from eternal_agent.models import InferenceResult, InferenceState
+from dagent.models import InferenceResult, InferenceState
 import requests
-from eternal_agent import constant as C
+from dagent import constant as C
 
 logger = logging.getLogger(__name__)
 

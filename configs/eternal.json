@@ -166,7 +166,7 @@
             "name": "SimpleCharacterBuilder"
         },
         "agent_builder": {
-            "name": "ReactChatAgent",
+            "name": "ReactChatDAgent",
             "init_params": {
                 "verbose": true
             }
@@ -201,7 +201,7 @@
                 }
             },
             "agent_builder": {
-                "name": "ReactReasoningAgent"
+                "name": "ReactReasoningDAgent"
             },
             "scheduling": {
                 "interval_minutes": 120 

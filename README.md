@@ -14,13 +14,13 @@ Set up the project environment using one of the methods below: **Conda** or **Pi
 1. **Create a Conda Environment**
 
     ```bash
-    conda create -n eternalai_agents python=3.10.0
+    conda create -n dagent python=3.10.0
     ```
 
 2. **Activate the Conda Environment:**
 
     ```bash
-    conda activate eternalai_agents
+    conda activate dagent
     ```
 
 3. **Install Dependencies:**
@@ -238,7 +238,7 @@ python daemon.py
 <!-- label -->
 
 
-To integrate a dAgent to your existing `python project`, run the following commands to install the `eternal_agent` package:
+To integrate a dAgent to your existing `python project`, run the following commands to install the `dagent` package:
 
 ```bash
 python -m pip install .
@@ -247,17 +247,17 @@ python -m pip install .
 python -m pip install git+https://github.com/eternalai-org/Eternals 
 ```
 
-Then, in your python project, just import the `eternal_agent`. Documentations for the app integration will be updated soon!
+Then, in your python project, just import the `dagent`. Documentations for the app integration will be updated soon!
 
 ```python3
-import eternal_agent
+import dagent
 ```
 
 ### Chat with a dAgent 
 
 To chat with a dAgent, please execute these following steps:
 
-- Install the `eternal_agent` package first: 
+- Install the `dagent` package first: 
 
 ```bash
 python -m pip install .

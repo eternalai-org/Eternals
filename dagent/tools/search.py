@@ -1,9 +1,9 @@
 from typing import List
-from eternal_agent.models import Tool, ToolParam, ToolParamDtype
-from eternal_agent.registry import RegistryCategory, register_decorator
+from dagent.models import Tool, ToolParam, ToolParamDtype
+from dagent.registry import RegistryCategory, register_decorator
 from . base_toolset import Toolset
 
-from eternal_agent import constant as C
+from dagent import constant as C
 import requests
 
 import re
@@ -13,7 +13,7 @@ def remove_html_tags(text: str) -> str:
 
 def wiki_search(query: str, lang="en", top_k=20) -> List[str]:
     headers = {
-        'User-Agent': "eternals"
+        'User-Agent': "dagent"
     }
     url = f"https://api.wikimedia.org/core/v1/wikipedia/{lang}/search/page"
     params = {

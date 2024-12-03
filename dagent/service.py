@@ -1,7 +1,7 @@
 import queue
 from .models import (
-    AgentLog, ChainState, ClassRegistration, 
-    ChatSession, NonInteractiveAgentLog, Mission, 
+    DAgentLog, ChainState, ClassRegistration, 
+    ChatSession, NonInteractiveDAgentLog, Mission, 
     Characteristic
 )
 
@@ -14,7 +14,7 @@ from .registry import get_cls, RegistryCategory
 from typing import Any, Callable, Union, Dict
 import schedule
 from .characters import DEFAULT_CHAT_COMPLETION_CHARACTER_BUILDER
-from .agents import NonInteractiveAgentBase
+from .agents import NonInteractiveDAgentBase
 from .llm import AsyncChatCompletion
 from singleton_decorator import singleton
 
@@ -26,7 +26,7 @@ class AutoServiceProvider(object):
     CHAT_SESSION_TIMEOUT = 60 * 60 * 3 # 3 hours
 
     def __init__(self) -> None:
-        self._que = queue.Queue() # a queue of NonInteractiveAgent
+        self._que = queue.Queue() # a queue of NonInteractiveDAgent
         self._interactive_sessions: Dict[str, ChatSession] = {}
         self._sleep_time = C.AUTO_SERVICE_SLEEP_TIME
 
@@ -62,7 +62,7 @@ class AutoServiceProvider(object):
             character_builder_cfg = ClassRegistration(**get_or_warning(mission, "character_builder", {}))
 
             agent_cls = get_cls(
-                RegistryCategory.NonInteractiveAgent, 
+                RegistryCategory.NonInteractiveDAgent, 
                 agent_builder_cfg.name
             )
 
@@ -70,7 +70,7 @@ class AutoServiceProvider(object):
                 logger.info("Scheduling a mission with interval %d minutes", interval_minutes)
 
                 creator = lambda: agent_cls(
-                    NonInteractiveAgentLog(
+                    NonInteractiveDAgentLog(
                         mission=Mission(
                             task=task,
                             system_reminder=system_reminder,
@@ -91,7 +91,7 @@ class AutoServiceProvider(object):
 
                 schedule.every(interval=interval_minutes).minutes.do(self.enqueue, creator)
 
-    def enqueue(self, state: Union[AgentLog, Callable]) -> AgentLog:
+    def enqueue(self, state: Union[DAgentLog, Callable]) -> DAgentLog:
         if callable(state):
             state = state()
         
@@ -109,10 +109,10 @@ class AutoServiceProvider(object):
                 logger.info("Processing %d items in the queue", que_length)
 
             while not self._que.empty():
-                agent: NonInteractiveAgentBase = self._que.get()
+                agent: NonInteractiveDAgentBase = self._que.get()
 
                 try:
-                    log_state: NonInteractiveAgentLog = agent.step()
+                    log_state: NonInteractiveDAgentLog = agent.step()
 
                     if agent.state in [ChainState.DONE, ChainState.ERROR]:
                         if agent.state == ChainState.DONE:

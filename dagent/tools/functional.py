@@ -1,9 +1,9 @@
 import requests
-from eternal_agent.models import TweetObject, TwitterUserObject
+from dagent.models import TweetObject, TwitterUserObject
 import logging
 from typing import List, Union, Optional
-from eternal_agent.utils import formated_utc_time
-from eternal_agent import constant as C
+from dagent.utils import formated_utc_time
+from dagent import constant as C
 import re
 from bs4 import BeautifulSoup
 
