@@ -18,7 +18,7 @@ IS_SANDBOX = get_env_and_warning("IS_SANDBOX", "0") == "1"
 ETERNAL_BACKEND_API = get_env_and_warning("ETERNAL_BACKEND_API", "").rstrip("/")
 ETERNAL_BACKEND_API_APIKEY = get_env_and_warning("ETERNAL_BACKEND_API_APIKEY") 
 
-ETERNAL_API_CHAIN_ID = os.getenv("ETERNAL_API_CHAIN_ID", "8453")
+ETERNAL_API_CHAIN_ID = os.getenv("ETERNAL_API_CHAIN_ID", "45762")
 
 # for trading, not available in the current version
 CHAIN_ID=None
