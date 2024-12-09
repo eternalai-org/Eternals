@@ -197,9 +197,9 @@ Modify the values in the `.env` file to match your environment settings.
 **Available Environment Variables**:
 - **`IS_SANDBOX`**: Set to **`0`** for production or **`1`** for sandbox mode.
 
-- **`ETERNAL_BACKEND_API`**: Set to the URL of your contract-based LLM backend API.
+- **`ETERNALAI_URL`**: Set to the URL of your contract-based LLM backend API.
 
-- **`ETERNAL_BACKEND_API_APIKEY`**: Set to your API key for the contract-based LLM backend API.
+- **`ETERNALAI_API_KEY`**: Set to your API key for the contract-based LLM backend API.
 
 - **`ETERNAL_X_API`**: Set to the URL of your Twitter API.
 
@@ -212,8 +212,8 @@ Example `.env` file:
 IS_SANDBOX=0
 
 # for contract based llm
-ETERNAL_BACKEND_API=https://api.eternalai.org
-ETERNAL_BACKEND_API_APIKEY=PUT_YOUR_API_KEY_HERE
+ETERNALAI_URL=https://api.eternalai.org
+ETERNALAI_API_KEY=PUT_YOUR_API_KEY_HERE
 
 # twitter api
 ETERNAL_X_API=https://agent.api.eternalai.org/api/developer

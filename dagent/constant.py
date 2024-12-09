@@ -15,8 +15,8 @@ ETERNAL_X_API = get_env_and_warning("ETERNAL_X_API", "").rstrip("/")
 ETERNAL_X_API_APIKEY = get_env_and_warning("ETERNAL_X_API_APIKEY")
 IS_SANDBOX = get_env_and_warning("IS_SANDBOX", "0") == "1"
 
-ETERNAL_BACKEND_API = get_env_and_warning("ETERNAL_BACKEND_API", "").rstrip("/")
-ETERNAL_BACKEND_API_APIKEY = get_env_and_warning("ETERNAL_BACKEND_API_APIKEY") 
+ETERNALAI_URL = get_env_and_warning("ETERNALAI_URL", "").rstrip("/")
+ETERNALAI_API_KEY = get_env_and_warning("ETERNALAI_API_KEY") 
 
 ETERNAL_API_CHAIN_ID = os.getenv("ETERNAL_API_CHAIN_ID", "45762")
 

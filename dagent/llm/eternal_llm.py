@@ -68,15 +68,15 @@ class EternalAIChatCompletion(AsyncChatCompletion):
         model_kwargs: dict, 
         temperature: float,
         max_retries: int, 
-        eternal_api_base: str=C.ETERNAL_BACKEND_API, 
-        eternal_api_key: str=C.ETERNAL_BACKEND_API_APIKEY,
+        eternal_api_base: str=C.ETERNALAI_URL, 
+        eternal_api_key: str=C.ETERNALAI_API_KEY,
         eternal_chain_id: str=C.ETERNAL_API_CHAIN_ID,
         *args, **kwargs
     ):
         super().__init__()
 
-        assert eternal_api_key is not None, "eternalai_api_key is not provided and ETERNAL_BACKEND_API is not set in the environment"
-        assert eternal_api_base is not None, "eternalai_api_base is not provided and ETERNAL_BACKEND_API_APIKEY is not set in the environment"
+        assert eternal_api_key is not None, "eternalai_api_key is not provided and ETERNALAI_URL is not set in the environment"
+        assert eternal_api_base is not None, "eternalai_api_base is not provided and ETERNALAI_API_KEY is not set in the environment"
         assert model_name is not None, "model_name is not provided" 
 
         self.eternal_api_key = eternal_api_key
