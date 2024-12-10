@@ -1,8 +1,8 @@
 import logging
 from dotenv import load_dotenv
+from dagent.utils import ConsoleColor, print_color
 
 logger = logging.getLogger(__name__)
-
 
 if not load_dotenv():
     logger.warning("Failed to load .env file")
@@ -88,7 +88,7 @@ def main():
             
             input_message = ""
             
-            print("> You: ", end="", flush=True)
+            print_color("> You: ", end="", flush=True, color=ConsoleColor.JUST_BOLD)
             while not input_message.strip(" \t\n\r"):
                 input_message = sys.stdin.readline().strip(" \t\n\r")
 
@@ -98,10 +98,18 @@ def main():
                 )
 
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 logger.error("An error occurred: %s", e)
                 break 
 
-            print(f"> Eternal: " + resp.content)
+            print_color(f"> Eternal: " + resp.content, color=ConsoleColor.GREEN)
+
+            if resp.onchain_data is not None:
+                console_width = os.get_terminal_size().columns
+                print_color("-" * min(console_width, 120), color=ConsoleColor.RED)
+                info = f'Infer-tx: {resp.onchain_data.infer_tx}\nSubmit-tx: {resp.onchain_data.submit_tx}\nInput-cid: {resp.onchain_data.input_cid}\nOutput-cid: {resp.onchain_data.output_cid}'
+                print_color(info, color=ConsoleColor.YELLOW)
 
             chat_thread.extend([
                 {

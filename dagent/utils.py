@@ -34,3 +34,33 @@ class SimpleCacheMechanism(object):
 
     def get(self, id: str, default=None) -> Optional[InferenceResult]:
         return self._log.get(id, default)
+
+from enum import Enum
+import sys
+
+class ConsoleColor(str, Enum):
+    RED = '\033[1;31m'
+    GREEN = '\033[1;32m'
+    YELLOW = '\033[1;33m'
+    BLUE = '\033[1;34m'
+    COLOR_OFF = '\033[1;0m'
+    WHITE = '\033[1;37m'
+    JUST_BOLD = '\033[1m'
+
+def print_error(msg):
+    if type(msg) == bytes:
+        msg = msg.decode('utf-8', errors = 'ignore')
+
+    print_color(f"[ERROR] {str(msg)}".rstrip('\n \t'), ConsoleColor.RED, file = sys.stderr)
+
+def print_warn(msg):
+    if type(msg) == bytes:
+        msg = msg.decode('utf-8', errors = 'ignore')
+
+    print_color(f"[WARNING] {str(msg)}".rstrip('\n \t'), ConsoleColor.YELLOW, file = sys.stdout)
+
+def print_color(msg, color: ConsoleColor = ConsoleColor.WHITE, file = None, end = '\n', flush=False):
+    if file is None or not hasattr(file, 'write'):
+        file = sys.stdout
+
+    print(f'{color.value}{msg}{ConsoleColor.COLOR_OFF.value}', file=file, end=end, flush=flush)
