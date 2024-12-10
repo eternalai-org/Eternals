@@ -1,11 +1,12 @@
 import logging
 from dotenv import load_dotenv
-from dagent.utils import ConsoleColor, print_color
 
 logger = logging.getLogger(__name__)
 
 if not load_dotenv():
     logger.warning("Failed to load .env file")
+
+from dagent.utils import ConsoleColor, print_color
 
 from argparse import ArgumentParser
 from dagent import registry, models, agents
