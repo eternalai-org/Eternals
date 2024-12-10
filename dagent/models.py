@@ -105,8 +105,18 @@ class Mission(BaseModel):
     system_reminder: str
     task: str
 
+class OnChainData(BaseModel):
+    assignment_addresses: List[str] = []
+    submit_address: Optional[str] = None
+    infer_tx: Optional[str] = None 
+    submit_tx: Optional[str] = None
+    seize_miner_tx: Optional[str] = None
+    input_cid: Optional[str] = None
+    output_cid: Optional[str] = None 
+
 class DAgentResponse(BaseModel):
     content: str
+    onchain_data: Optional[OnChainData] = None
 
 class NonInteractiveDAgentLog(DAgentLog):
     mission: Mission
@@ -141,18 +151,20 @@ class ChatSession(BaseModel):
 
 # TODO: there should be a cachable interface
 class InferenceResult(Serializable):
-    def __init__(self, id: str, state: InferenceState, result: Optional[str]=None, error: Optional[str]=None):
+    def __init__(self, id: str, state: InferenceState, result: Optional[str]=None, error: Optional[str]=None, onchain_data: Optional[OnChainData]=None):
         self.state = state
         self.result = result
         self.error = error    
         self.id = id  
+        self.onchain_data = onchain_data
 
     def __dict__(self) -> dict:
         return {
             "id": self.id,
             "state": self.state,
             "result": self.result,
-            "error": self.error
+            "error": self.error,
+            "tx_hash": self.tx_hash
         }
 
 class TweetObject(Serializable):
