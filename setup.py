@@ -25,7 +25,7 @@ setup(
     version=version["__version__"],
     author="EternalAI",
     author_email="dev@eternalai.org",
-    description="EternalAI Agent is a conversational decentralized agent that can perform various tasks using a combination of toolsets and language models. The agent can be configured to execute multiple missions, each with its own set of toolsets and language models.",
+    description="EternalAI Agent is a conversational decentralized agent that can perform various tasks using a combination of tool sets and language models. The agent can be configured to execute multiple missions, each with its own set of toolsets and language models.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/eternalai-org/dagent",
