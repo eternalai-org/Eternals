@@ -2,7 +2,7 @@ from .base_llm import AsyncChatCompletion
 from dagent.registry import RegistryCategory, register_decorator
 from typing import List, Dict
 import logging
-from dagent.models import InferenceResult, InferenceState
+from dagent.models import InferenceResult, InferenceState, OnChainData
 import requests
 from dagent import constant as C
 
@@ -20,6 +20,8 @@ class EternalAIChatCompletion(AsyncChatCompletion):
     }
 
     def __call__(self, _messages: List[Dict[str, str]], stop: List[str]=[], override_kwargs: dict={}): 
+
+        last_onchain_data = None
 
         for _try in range(self.max_retries + 1):
             if _try > 0:
@@ -45,20 +47,25 @@ class EternalAIChatCompletion(AsyncChatCompletion):
                 url, 
                 json=payload
             )
+            
+            resp_json = resp.json()
+            last_onchain_data=resp_json.get('onchain_data')
 
             if resp.status_code == 200:
                 return self.commit(InferenceResult(
                     id=self.generate_uuid(),
                     state=InferenceState.DONE,
-                    result=resp.json()['choices'][0]['message']['content']
+                    result=resp_json['choices'][0]['message']['content'],
+                    onchain_data=OnChainData.model_validate(last_onchain_data)
                 ))
-
-            logger.error("Failed to get a response from the model. Status code: {}; Text: {}; URL: {}".format(resp.status_code, resp.text, url))
+                
+            logger.error("Failed to get a response from the model. Status code: {}; Text: {}; URL: {}".format(resp.status_code, resp.text, url, last_onchain_data))
 
         return self.commit(InferenceResult(
             id=self.generate_uuid(),
             state=InferenceState.ERROR,
-            error="Failed to get a response from the model"
+            error="Failed to get a response from the model",
+            onchain_data=OnChainData.model_validate(last_onchain_data)
         ))
 
     def __init__(

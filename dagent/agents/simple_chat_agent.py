@@ -55,7 +55,8 @@ class SimpleChatDAgent(InteractiveDAgentBase):
         if resp.result is not None:
             self.log.scratchpad.append({
                 'role': 'assistant',
-                'content': resp.result
+                'content': resp.result,
+                'onchain_data': resp.onchain_data.model_dump() if resp.onchain_data else None
             })
         else:
             self.log.scratchpad.pop()
