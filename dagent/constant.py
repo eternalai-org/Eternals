@@ -18,8 +18,8 @@ IS_SANDBOX = get_env_and_warning("IS_SANDBOX", "0") == "1"
 ETERNALAI_URL = get_env_and_warning("ETERNALAI_URL", "").rstrip("/")
 ETERNALAI_API_KEY = get_env_and_warning("ETERNALAI_API_KEY") 
 
-DEFAULT_ETERNAL_CHAIN_ID = os.getenv("DEFAULT_ETERNAL_CHAIN_ID", "45762")
-DEFAULT_ETERNAL_MODEL_NAME = os.getenv("DEFAULT_ETERNAL_MODEL_NAME", "unsloth/Llama-3.3-70B-Instruct-bnb-4bit")
+ETERNAL_CHAIN_ID = os.getenv("ETERNAL_CHAIN_ID", "45762")
+ETERNAL_MODEL_NAME = os.getenv("ETERNAL_MODEL_NAME", "unsloth/Llama-3.3-70B-Instruct-bnb-4bit")
 
 # for trading, not available in the current version
 CHAIN_ID=None
