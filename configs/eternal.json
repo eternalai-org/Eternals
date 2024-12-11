@@ -153,8 +153,6 @@
         "llm_cfg": {
             "name": "EternalAIChatCompletion",
             "init_params": {
-                "chain_id": "45762",
-                "model_name": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
                 "max_tokens": 1024,
                 "model_kwargs": {},
                 "temperature": 0.3,
@@ -188,7 +186,6 @@
             "llm_cfg": {
                 "name": "EternalAIChatCompletion",
                 "init_params": {
-                    "model_name": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
                     "max_tokens": 1024,
                     "model_kwargs": {},
                     "temperature": 0.3,

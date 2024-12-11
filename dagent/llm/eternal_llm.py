@@ -70,14 +70,14 @@ class EternalAIChatCompletion(AsyncChatCompletion):
 
     def __init__(
         self, 
-        model_name: str, 
         max_tokens: int,
         model_kwargs: dict, 
         temperature: float,
         max_retries: int, 
         eternal_api_base: str=C.ETERNALAI_URL, 
         eternal_api_key: str=C.ETERNALAI_API_KEY,
-        eternal_chain_id: str=C.ETERNAL_API_CHAIN_ID,
+        model_name: str=C.DEFAULT_ETERNAL_MODEL_NAME, 
+        eternal_chain_id: str=C.DEFAULT_ETERNAL_CHAIN_ID,
         *args, **kwargs
     ):
         super().__init__()
