@@ -109,7 +109,7 @@ def main():
             if resp.onchain_data is not None:
                 console_width = os.get_terminal_size().columns
                 print_color("-" * min(console_width, 120), color=ConsoleColor.RED)
-                info = f'Infer-tx: {resp.onchain_data.infer_tx}\nSubmit-tx: {resp.onchain_data.submit_tx}\nInput-cid: {resp.onchain_data.input_cid}\nOutput-cid: {resp.onchain_data.output_cid}'
+                info = f'Infer-tx: {resp.onchain_data.infer_tx}\nPropose_tx: {resp.onchain_data.propose_tx}\nInput-cid: {resp.onchain_data.input_cid}\nOutput-cid: {resp.onchain_data.output_cid}'
                 print_color(info, color=ConsoleColor.YELLOW)
 
             chat_thread.extend([

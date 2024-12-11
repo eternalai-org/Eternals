@@ -109,7 +109,7 @@ class OnChainData(BaseModel):
     assignment_addresses: List[str] = []
     submit_address: Optional[str] = None
     infer_tx: Optional[str] = None 
-    submit_tx: Optional[str] = None
+    propose_tx: Optional[str] = None
     seize_miner_tx: Optional[str] = None
     input_cid: Optional[str] = None
     output_cid: Optional[str] = None 
