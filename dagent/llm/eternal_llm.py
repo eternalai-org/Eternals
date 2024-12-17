@@ -31,7 +31,7 @@ class EternalAIChatCompletion(AsyncChatCompletion):
                 **self.model_kwargs,
                 **self.DEFAULT_PARAMS,
                 "model": self.model_name,
-                "chain_id": "45762",
+                "chain_id": self.chain_id,
                 "messages": _messages,
                 "temperature": self.temperature,
                 "max_tokens": self.max_tokens,
